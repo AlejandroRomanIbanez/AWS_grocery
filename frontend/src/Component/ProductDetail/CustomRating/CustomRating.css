@@ -1,0 +1,44 @@
+.custom-rating {
+  display: flex;
+}
+
+.custom-rating .star {
+  font-size: 20px;
+  margin-right: 5px;
+  position: relative;
+}
+
+.custom-rating .star.full {
+  background: linear-gradient(90deg, #66ccff, #004494);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.custom-rating .star.partial {
+  position: relative;
+  display: inline-block;
+  width: 20px;
+}
+
+.custom-rating .star.partial .filled {
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  background: linear-gradient(90deg, #66ccff, #004494);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.custom-rating .star.partial .unfilled {
+  color: #ddd;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: -1;
+}
+
+.custom-rating .star.empty {
+  color: #ddd;
+}

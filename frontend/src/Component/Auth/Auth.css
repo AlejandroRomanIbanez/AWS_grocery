@@ -1,0 +1,138 @@
+.auth-wrapper {
+    display: flex;
+    height: 100vh;
+    align-items: center;
+    justify-content: center;
+    background: #f0f0f0;
+  }
+  
+.home-link {
+    display: block;
+    margin-top: 10px;
+    color: #003366;
+    text-decoration: none;
+  }
+  
+.home-link:hover {
+    text-decoration: underline;
+    color: #66ccff;
+}
+
+  .auth-container {
+    display: flex;
+    width: 90%;
+    max-width: 1200px;
+    height: 80%;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .auth-form-container {
+    width: 50%;
+    background: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    border-right: 1px solid #ddd;
+  }
+  
+  .auth-info {
+    width: 50%;
+    background: linear-gradient(to right, #003366, #66ccff);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+  }
+  
+  .logo {
+    margin: 30px;
+    margin-bottom: 80px;
+    width: 400px;
+    height: 150px;
+  }
+  
+  .header-title {
+    margin: 10px 0;
+    font-size: 24px;
+    font-weight: bold;
+  }
+  
+  .form {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .form-input {
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 15px;
+  }
+  
+  .submit-btn {
+    background: #003366;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px;
+    cursor: pointer;
+  }
+  
+  .submit-btn:hover {
+    background: #66ccff;
+  }
+  
+  .switch-link {
+    display: block;
+    margin-top: 10px;
+    color: #003366;
+    text-decoration: none;
+  }
+  
+  .switch-link:hover {
+    text-decoration: underline;
+    color: #66ccff;
+  }
+
+  .logout-btn {
+    width: 100%;
+    padding: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 18px;
+    margin-top: 20px;
+  }
+  
+  .logout-btn:hover {
+    background-color: #0056b3;
+  }
+  
+  @media (max-width: 768px) {
+    .auth-container {
+      flex-direction: column;
+      width: 100%;
+      height: auto;
+    }
+  
+    .auth-form-container,
+    .auth-info {
+      width: 100%;
+      border: none;
+      border-bottom: 1px solid #ddd;
+    }
+  
+    .auth-info {
+      border: none;
+    }
+  }
+  

@@ -1,0 +1,160 @@
+/* ProductComments.css */
+
+.product-comments {
+  padding: 2rem 0;
+}
+
+.comments-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.comment {
+  display: flex;
+  margin-bottom: 1.5rem;
+}
+
+.comment-body {
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 1rem;
+  flex: 1;
+  position: relative; /* Position relative for dropdown */
+}
+
+.comment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.menu-icon {
+  cursor: pointer;
+  font-size: 24px;
+  padding: 0.5rem;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 2rem; /* Adjust according to the icon position */
+  right: 1rem;
+  background-color: #fff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 5px;
+  padding: 0.5rem 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.dropdown-menu button {
+  background: none;
+  border: none;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+}
+
+.dropdown-menu button:hover {
+  background-color: #f0f0f0;
+}
+
+.comment-body h5 {
+  margin: 0 0 0.5rem 0;
+}
+
+.comment-body .small {
+  color: #aaa;
+  margin-bottom: 1rem;
+}
+
+.comment-footer {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.comment-actions {
+  display: flex;
+  flex-direction: column;
+}
+
+.comment-actions .rating {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.comment-actions .rating .small {
+  margin-left: 0.5rem;
+  color: #aaa;
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal {
+  background-color: #fff;
+  padding: 2rem;
+  border-radius: 10px;
+  width: 400px;
+  max-width: 90%;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.modal h2 {
+  margin-top: 0;
+}
+
+.modal label {
+  display: block;
+  margin: 1rem 0;
+}
+
+.modal input,
+.modal textarea {
+  width: 100%;
+  padding: 0.5rem;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  margin-top: 0.5rem;
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: space-between;
+}
+
+.modal-buttons button {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  background-color: #007bff;
+  color: #fff;
+  margin-top: 1rem;
+}
+
+.modal-buttons button:hover {
+  background-color: #0056b3;
+}
+
+.modal-buttons button:last-child {
+  background-color: #dc3545;
+}
+
+.modal-buttons button:last-child:hover {
+  background-color: #c82333;
+}

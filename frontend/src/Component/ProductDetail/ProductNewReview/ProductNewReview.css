@@ -1,0 +1,129 @@
+.new-review-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem 0;
+}
+
+.new-review-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+.new-review-card {
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    background-color: #fff;
+}
+
+.new-review-card-body {
+    padding: 2rem 4rem;
+}
+
+.new-review-d-flex {
+    display: flex;
+    align-items: flex-start;
+}
+
+.new-review-w-100 {
+    width: 100%;
+}
+
+.new-review-rounded-circle {
+    border-radius: 50%;
+}
+
+.new-review-shadow-1-strong {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.new-review-me-3 {
+    margin-right: 1rem;
+}
+
+.new-review-rating-stars {
+    display: flex;
+    margin-bottom: 1rem;
+}
+
+.new-review-form-control {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    resize: none;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    margin-right: 15rem;
+}
+
+.new-review-char-counter {
+    text-align: right;
+    font-size: 0.875rem;
+    color: #333;
+}
+
+.new-review-char-counter .error {
+    color: red;
+}
+
+.error-message {
+    color: red;
+    margin-top: 0.5rem;
+}
+
+.new-review-btn-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.new-review-btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    font-size: 1rem;
+    flex: 1;
+    max-width: 48%;
+    margin-right: 1%;
+}
+
+.new-review-btn:last-child {
+    margin-right: 0;
+}
+
+.new-review-btn-cancel {
+    background-color: #0056b3;
+    color: white;
+}
+
+.new-review-btn-cancel:hover {
+    background-color: #004494;
+}
+
+.new-review-btn-send {
+    background-color: #66ccff;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.new-review-btn-send:hover {
+    background-color: #4bb5e7;
+}
+
+.new-review-btn-send i {
+    margin-left: 0.5rem;
+}
+
+.new-review-mt-3 {
+    margin-top: 1rem;
+}
+
+.new-review-form-control.error {
+    border-color: red;
+}

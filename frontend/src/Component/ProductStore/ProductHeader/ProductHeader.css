@@ -1,0 +1,96 @@
+/* Base styles */
+header {
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #ddd;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    flex-wrap: nowrap; /* Ensure content stays on one line */
+}
+
+header strong {
+    display: block;
+    padding: 0.5rem 0;
+}
+
+header .ms-auto {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap; /* Ensure content stays on one line */
+}
+
+/* Custom Select Styles */
+.custom-select-container {
+    position: relative;
+    display: inline-block;
+    min-width: 120px; /* Minimum width to prevent wrapping */
+    margin-left: 5px; /* Adjust to move the container slightly to the right */
+}
+
+.custom-select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    width: 93%;
+    padding: 6px 12px; /* Reduced padding */
+    border: 1px solid #A6C8EB; /* Blue border */
+    border-radius: 5px;
+    background: #fff;
+    font-size: 14px; /* Reduced font size */
+    font-family: 'Livvic', sans-serif;
+    color: #333;
+    cursor: pointer;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Added shadow */
+    box-sizing: border-box; /* Ensure padding is included in the total width */
+}
+
+.custom-select:hover,
+.custom-select:focus {
+    border-color: #A6C8EB;
+    outline: none;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Increased shadow on hover/focus */
+}
+
+/* Custom Arrow */
+.custom-select-container::after {
+    content: '▼';
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    pointer-events: none;
+    transition: transform 0.3s ease;
+}
+
+.custom-select-container.select-open::after {
+    transform: translateY(-50%) rotate(180deg);
+}
+
+.custom-options {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    border: 1px solid #A6C8EB;
+    border-top: none;
+    background: #fff;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    z-index: 10;
+    max-height: 200px;
+    overflow-y: auto;
+    border-radius: 0 0 5px 5px;
+}
+
+.custom-option {
+    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 14px;
+    font-family: 'Livvic', sans-serif;
+    color: #333;
+}
+
+.custom-option:hover {
+    background-color: #f1f1f1;
+}

@@ -1,0 +1,41 @@
+.skeleton-image {
+    width: 100%;
+    height: 300px;
+    background-color: #e0e0e0;
+    margin-bottom: 20px;
+  }
+  
+  .skeleton-title {
+    width: 60%;
+    height: 24px;
+    background-color: #e0e0e0;
+    margin-bottom: 10px;
+  }
+  
+  .skeleton-rating {
+    width: 40%;
+    height: 16px;
+    background-color: #e0e0e0;
+    margin-bottom: 10px;
+  }
+  
+  .skeleton-category {
+    width: 50%;
+    height: 20px;
+    background-color: #e0e0e0;
+    margin-bottom: 10px;
+  }
+  
+  .skeleton-price {
+    width: 30%;
+    height: 24px;
+    background-color: #e0e0e0;
+    margin-bottom: 20px;
+  }
+  
+  .skeleton-comments {
+    width: 100%;
+    height: 150px;
+    background-color: #e0e0e0;
+  }
+  

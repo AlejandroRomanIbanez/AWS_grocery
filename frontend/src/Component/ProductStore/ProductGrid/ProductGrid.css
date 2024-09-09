@@ -1,0 +1,275 @@
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 3rem 0;
+}
+
+.product-grid {
+    display: grid;
+    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+}
+
+.product-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border-radius: 10px;
+    overflow: hidden;
+    text-align: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    height: 450px; /* Set a fixed height for the product card */
+    background-color: #fff; /* Ensure the background is white */
+}
+
+.product-card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.card-header {
+    padding: 10px 15px; /* Adjust padding as needed */
+    flex-shrink: 0;
+    height: 80px; /* Fix height to accommodate one or two lines */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.card-header p {
+    font-weight: bold; /* Make product name bold */
+    margin: 0;
+    word-wrap: break-word;
+    display: -webkit-box;
+    -webkit-line-clamp: 2; /* Show up to 2 lines */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: normal;
+}
+
+.card-img-top {
+    width: 100%;
+    height: 170px; /* Adjust height to balance with title */
+    object-fit: cover;
+    flex-shrink: 0;
+    cursor: pointer;
+}
+
+.card-body {
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    flex-grow: 1;
+}
+
+.card-body h5 {
+    margin: 10px 0;
+    font-weight: bold; /* Make price bold */
+}
+
+.card-body p {
+    margin: 5px 0;
+}
+
+.text-muted {
+    color: #6c757d !important;
+}
+
+.text-dark {
+    color: #343a40 !important;
+}
+
+.lead {
+    font-size: 1.25rem;
+    font-weight: 300;
+    margin-bottom: 0 !important;
+}
+
+.category, .discount-price {
+    display: inline-block;
+}
+
+.content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    flex-shrink: 0;
+}
+
+.content a {
+    text-decoration: none;
+}
+
+.button-area {
+    padding: 15px 0 0 0;
+    flex-shrink: 0;
+}
+
+.row {
+    display: flex;
+    justify-content: space-between;
+    margin: 10px 0;
+    width: 100%; /* Ensure the row takes full width */
+}
+
+.col-3, .col-7, .col-1 {
+    display: flex;
+    align-items: center;
+}
+
+.col-3 {
+    flex: 0 0 25%; /* Adjust width */
+    margin: 0 3px;
+}
+
+.col-7 {
+    flex: 1; /* Adjust width */
+    margin: 0 3px;
+}
+
+.col-1 {
+    flex: 0 0 15%; /* Adjust width */
+    margin: 0 3px;
+}
+
+.quantity {
+    width: 100%;
+    border: 1px solid #343a40;
+    text-align: center;
+    height: 40px; /* Increased height for better alignment */
+    border-radius: 5px;
+    padding: 0 5px;
+}
+
+.btn {
+    display: inline-block;
+    padding: 8px 10px; /* Adjust padding */
+    font-size: 0.75rem; /* Adjust font size */
+    border-radius: 5px;
+    text-align: center;
+    width: 100%;
+    height: 40px;
+    box-sizing: border-box; /* Ensure padding and border are included in the width and height */
+}
+
+.btn-primary {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+}
+
+.btn-outline-dark {
+    background-color: transparent;
+    color: #343a40;
+    border: 1px solid #66ccff;
+    cursor: pointer;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-outline-dark:hover,
+.btn-favorite {
+    background-color: #66ccff;
+    color: white;
+}
+
+.no-products-card {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 10px;
+    overflow: hidden;
+    text-align: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    min-height: 500px; /* Increase height to ensure all content fits */
+    background-color: #fff;
+    grid-column: span 3; /* Adjust the span according to your grid layout */
+    margin: 0 auto;
+}
+
+.no-products-card .card {
+    width: 100%;
+    padding: 20px;
+    background-color: #f8f9fa;
+}
+
+.no-products-card .card-body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.no-products-card .no-products-image {
+    max-width: 100%;
+    height: auto;
+    margin-bottom: 20px;
+}
+
+.no-products-card h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.no-products-card p {
+    font-size: 1rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 575px) {
+    .btn {
+        font-size: 0.75rem; /* Decrease font size for smaller screens */
+        padding: 6px 8px; /* Adjust padding for smaller screens */
+    }
+
+    .no-products-card {
+        min-height: 300px; /* Adjust height for smaller screens */
+    }
+
+    .no-products-card h2 {
+        font-size: 1.25rem; /* Adjust font size for smaller screens */
+    }
+
+    .no-products-card p {
+        font-size: 0.875rem; /* Adjust font size for smaller screens */
+    }
+}
+
+/* Responsive Grid Layout */
+@media (min-width: 1600px) {
+    .product-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media (min-width: 768px) and (max-width: 1599px) {
+    .product-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (min-width: 576px) and (max-width: 767px) {
+    .product-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 575px) {
+    .product-grid {
+        grid-template-columns: 1fr;
+    }
+}

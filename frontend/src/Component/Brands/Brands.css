@@ -1,0 +1,57 @@
+.brands-container {
+    max-width: 1200px;
+    padding: 0 1rem;
+    margin: 0 auto;
+    margin-top: 60px;
+}
+
+.brandImg {
+    transition-duration: .4s;
+    width: 100px;
+    height: auto;
+}
+
+.brandImg:hover {
+    transform: scale(1.2);
+}
+
+/* Responsive Design */
+@media (min-width: 1200px) {
+    .brands-content {
+        gap: 92px;
+    }
+
+    .brandImg {
+        width: 120px;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 1199px) {
+    .brands-content {
+        gap: 50px;
+    }
+
+    .brandImg {
+        width: 100px;
+    }
+}
+
+@media (max-width: 767px) {
+    .brands-content {
+        gap: 30px;
+    }
+
+    .brandImg {
+        width: 80px;
+    }
+}
+
+@media (max-width: 575px) {
+    .brands-content {
+        gap: 20px;
+    }
+
+    .brandImg {
+        width: 60px;
+    }
+}

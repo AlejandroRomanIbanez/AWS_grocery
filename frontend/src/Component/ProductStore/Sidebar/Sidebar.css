@@ -1,0 +1,78 @@
+.sidebar-container {
+  margin: 0;
+  background-color: rgba(0, 0, 0, 0);
+  border-color: rgb(102, 102, 102);
+  box-sizing: border-box;
+  color: rgb(102, 102, 102);
+  width: 300px;
+  padding: 15px;
+  text-align: left;
+}
+
+.shop-sidebar {
+  background-color: rgba(0, 0, 0, 0);
+  margin-top: 65px;
+}
+
+.widget {
+  margin-bottom: 20px; /* Reduced margin */
+}
+
+.widget-title {
+  display: flex;
+  align-items: center;
+  font-family: Livvic, sans-serif;
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 20px; /* Reduced margin */
+  padding-bottom: 10px; /* Reduced padding */
+  border-bottom: 1px solid rgba(118, 167, 19, 0.15);
+  color: rgb(26, 36, 40);
+}
+
+.widget-icon {
+  width: 50px; /* Increased size */
+  height: auto;
+  margin-right: 15px; /* Increased space between icon and title */
+}
+
+.widget-menu ul,
+.widget-products ul,
+.widget-tag-cloud .tag-clouds {
+  list-style-type: none;
+  padding: 0;
+}
+
+.widget-menu ul li,
+.widget-products ul li {
+  display: flex;
+  align-items: center; /* Align items vertically center */
+  margin-bottom: 10px;
+  font-family: Livvic, sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  position: relative; /* Required for pseudo-element positioning */
+}
+
+.widget-menu ul li::before,
+.widget-products ul li::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  background-color: gray;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 10px;
+}
+
+.widget-menu ul li a,
+.widget-products ul li a {
+  text-decoration: none;
+  color: rgb(26, 36, 40);
+  transition: color 0.5s;
+}
+
+.widget-menu ul li a:hover,
+.widget-products ul li a:hover {
+  color: #A6C8EB;
+}

@@ -1,0 +1,77 @@
+.productDetailContainer {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    border-bottom: 1px solid #ccc;
+  }
+  
+  .imageGalleryContainer,
+  .descriptionContainer {
+    padding: 20px;
+  }
+  
+  .productImage {
+    width: 100%;
+    max-width: 380px; /* Reduce the size by setting a maximum width */
+    height: auto; /* Ensure the image scales properly */
+  }
+  
+  .descriptionContainer h2 {
+    padding-top: 20px;
+    font-size: 24px;
+    font-weight: bold;
+  }
+  
+  .descriptionContainer .category {
+    font-weight: bold;
+    margin-top: 10px;
+  }
+  
+  .descriptionContainer .price {
+    font-size: 40px;
+    font-weight: bold;
+    color: #007bff;
+    margin-top: 10px;
+  }
+  
+  .ratingContainer {
+    display: flex;
+    align-items: center;
+    margin-top: 10px;
+  }
+  
+  .reviews {
+    margin-left: 10px;
+    font-size: 14px;
+    color: #666;
+  }
+  
+  .reviewRestriction {
+    text-align: center;
+    margin-top: 20px;
+    padding: 20px;
+    background-color: #f8f9fa; /* Light gray background */
+    border: 1px solid #dee2e6; /* Light border */
+    border-radius: 8px; /* Rounded corners */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+  }
+  
+  .reviewRestriction p {
+    font-size: 16px;
+    color: #333; /* Darker text color */
+    font-weight: 500; /* Slightly bolder text */
+    margin: 0;
+  }
+  
+  .reviewRestriction .restrictionImage {
+    width: 100px;
+    height: 100px;
+    margin-bottom: 15px;
+  }
+  
+  .reviewRestriction p strong {
+    color: #007bff; /* Accent color for emphasis */
+  }
+  

@@ -1,0 +1,16 @@
+.product-store-container {
+    display: flex;
+    flex-direction: row;
+  }
+  
+  .sidebar-container {
+    flex-basis: 25%;
+    flex-shrink: 0;
+  }
+  
+  .main-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  

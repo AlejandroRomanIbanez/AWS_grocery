@@ -1,0 +1,28 @@
+.interactive-rating {
+    display: flex;
+  }
+  
+  .interactive-rating .star {
+    font-size: 24px;
+    color: #ddd; /* Default color for unselected stars */
+    margin-right: 5px;
+    cursor: pointer;
+    transition: color 0.2s ease-in-out;
+  }
+  
+  /* When a star is hovered, all previous and current stars turn dark blue */
+  .interactive-rating .star:hover,
+  .interactive-rating .star:hover ~ .star {
+    color: #004494; /* Darker blue on hover */
+  }
+  
+  /* When a star is selected, all previous and current stars turn light blue */
+  .interactive-rating .star.filled {
+    color: #66ccff; /* Light blue for selected stars */
+  }
+  
+  /* This ensures unselected stars keep the default color */
+  .interactive-rating .star.empty {
+    color: #004494;
+  }
+  
