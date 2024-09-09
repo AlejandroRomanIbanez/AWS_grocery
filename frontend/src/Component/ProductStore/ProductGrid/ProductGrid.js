@@ -32,7 +32,7 @@ const ProductGrid = ({ products, isFav, basket, setBasket, filterByCategory, res
               Authorization: `Bearer ${token}`
             }
           });
-          setFavProductIds(response.data.map(product => product._id));
+          setFavProductIds(response.data.map(product => product.id));
           setLoading(false);
         } catch (error) {
           console.error('Failed to fetch favorites:', error);
@@ -135,13 +135,13 @@ const ProductGrid = ({ products, isFav, basket, setBasket, filterByCategory, res
       navigate('/auth');
       return;
     }
-    const quantity = quantities[product._id] || 1;
+    const quantity = quantities[product.id] || 1;
     const newBasket = [...basket];
-    const productIndex = newBasket.findIndex(item => item.product_id === product._id);
+    const productIndex = newBasket.findIndex(item => item.product_id === product.id);
     if (productIndex > -1) {
       newBasket[productIndex].quantity += quantity;
     } else {
-      newBasket.push({ product_id: product._id, quantity });
+      newBasket.push({ product_id: product.id, quantity });
     }
     setBasket(newBasket);
 
@@ -209,17 +209,17 @@ const ProductGrid = ({ products, isFav, basket, setBasket, filterByCategory, res
           currentProducts.map(product => (
             <div 
             className="product-card"
-            key={product._id}
+            key={product.id}
             >
               <div className="card" >
-                <div className="card-header" onClick={() => handleProductClick(product._id)}>
+                <div className="card-header" onClick={() => handleProductClick(product.id)}>
                   <p className="lead">{product.name}</p>
                 </div>
                 <img 
                   src={product.image_url}
                   alt={product.name}
                   className="card-img-top"
-                  onClick={() => handleProductClick(product._id)}
+                  onClick={() => handleProductClick(product.id)}
                   />
                 <div className="card-body">
                   <div className="content">
@@ -244,11 +244,11 @@ const ProductGrid = ({ products, isFav, basket, setBasket, filterByCategory, res
                       <div className="col-3">
                         <input
                           type="number"
-                          name={`quantity_${product._id}`}
+                          name={`quantity_${product.id}`}
                           className="quantity"
-                          value={quantities[product._id] || 1}
+                          value={quantities[product.id] || 1}
                           min="1"
-                          onChange={(e) => handleQuantityChange(product._id, parseInt(e.target.value))}
+                          onChange={(e) => handleQuantityChange(product.id, parseInt(e.target.value))}
                         />
                       </div>
                       <div className="col-7">
@@ -261,8 +261,8 @@ const ProductGrid = ({ products, isFav, basket, setBasket, filterByCategory, res
                       </div>
                       <div className="col-1">
                         <button
-                          className={`btn btn-outline-dark ${favProductIds.includes(product._id) ? 'btn-favorite' : ''}`}
-                          onClick={() => handleAddToFavorites(product._id)}
+                          className={`btn btn-outline-dark ${favProductIds.includes(product.id) ? 'btn-favorite' : ''}`}
+                          onClick={() => handleAddToFavorites(product.id)}
                         >
                           ❤
                         </button>

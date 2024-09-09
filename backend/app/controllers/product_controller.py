@@ -1,13 +1,10 @@
 from flask import jsonify, request
-from pydantic import ValidationError
-
-from app.helpers import format_validation_error
-from app.models.product_model import ReviewModel
-from app.services.product_service import get_all_products, get_product_by_id, add_review_to_product, \
+from ..services.product_service import get_all_products, get_product_by_id, add_review_to_product, \
     remove_review_from_product, update_product_review
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from sqlalchemy.exc import DataError
 
-from app.services.user_service import get_user_info
+from ..services.user_service import get_user_info
 
 
 def fetch_all_products():
@@ -32,10 +29,20 @@ def get_single_product(product_id):
         JSON: A JSON response containing the product if found,
               otherwise an error message with a 404 status code.
     """
-    product = get_product_by_id(product_id)
-    if product:
-        return jsonify(product)
-    return jsonify({'error': 'Product not found'}), 404
+    try:
+        # Validate product_id is an integer
+        product_id = int(product_id)
+        print("""product_id""", product_id)
+    except ValueError:
+        return jsonify({"error": "Invalid product ID"}), 400
+
+    try:
+        product = get_product_by_id(product_id)
+        if product:
+            return jsonify(product)
+        return jsonify({'error': 'Product not found'}), 404
+    except DataError:
+        return jsonify({"error": "Invalid product ID format"}), 400
 
 
 @jwt_required()
@@ -61,14 +68,7 @@ def add_review(product_id):
         review_data = request.json
         review_data['Author'] = user_info.get('username', 'Anonymous')
 
-        try:
-            review_model = ReviewModel(**review_data)
-        except ValidationError as e:
-            print("Validation error:", e)
-            return jsonify({"message": format_validation_error(e)}), 400
-
-        # Add review to the product
-        response = add_review_to_product(product_id, review_model)
+        response = add_review_to_product(product_id, review_data)
         return jsonify(response), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 400

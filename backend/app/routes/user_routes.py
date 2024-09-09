@@ -1,5 +1,5 @@
 from flask import Blueprint
-from app.controllers.user_controller import add_favorite, get_favorites, remove_favorite, sync_basket, get_basket, \
+from ..controllers.user_controller import add_favorite, get_favorites, remove_favorite, sync_basket, get_basket, \
     remove_from_basket, purchase_product, get_purchased_products, get_current_user_info
 
 user_bp = Blueprint('favorite', __name__, url_prefix='/api/me')

@@ -61,8 +61,8 @@ const ProductComments = ({ reviews, onDelete, onEdit }) => {
 
   const handleEdit = (review) => {
     setCurrentReview(review);
-    setUpdatedRating(parseInt(review.Rating));
-    setUpdatedComment(review.Comment);
+    setUpdatedRating(parseInt(review.rating));
+    setUpdatedComment(review.comment);
     setIsModalOpen(true);
     setCurrentDropdown(null); // Close the dropdown after action
   };
@@ -73,7 +73,7 @@ const ProductComments = ({ reviews, onDelete, onEdit }) => {
   };
 
   const handleSubmit = () => {
-    onEdit(currentReview.Author, parseInt(updatedRating), updatedComment);
+    onEdit(currentReview.author, parseInt(updatedRating), updatedComment);
     handleModalClose();
   };
 
@@ -85,23 +85,23 @@ const ProductComments = ({ reviews, onDelete, onEdit }) => {
             <div className="comment" key={index}>
               <div className="comment-body">
                 <div className="comment-header">
-                  <h5><strong>{review.Author}</strong></h5>
-                  {review.Author === username && (
+                  <h5><strong>{review.author}</strong></h5>
+                  {review.author === username && (
                     <div className="menu-icon" onClick={() => toggleDropdown(index)}>...</div>
                   )}
                   {currentDropdown === index && (
                     <div className="dropdown-menu" ref={dropdownRef}>
                       <button onClick={() => handleEdit(review)}>Edit</button>
-                      <button onClick={() => handleDelete(review.Author)}>Delete</button>
+                      <button onClick={() => handleDelete(review.author)}>Delete</button>
                     </div>
                   )}
                 </div>
-                <p>{review.Comment}</p>
+                <p>{review.comment}</p>
                 <div className="comment-footer">
                   <div className="comment-actions">
                     <div className="rating">
-                      <CustomRating rating={review.Rating} />
-                      <span className="small">({parseInt(review.Rating.toFixed(1))})</span>
+                      <CustomRating rating={review.rating} />
+                      <span className="small">({parseInt(review.rating.toFixed(1))})</span>
                     </div>
                   </div>
                 </div>

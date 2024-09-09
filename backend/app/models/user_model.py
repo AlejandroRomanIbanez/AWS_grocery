@@ -1,23 +1,26 @@
+from .. import db
 from pydantic import BaseModel, Field
-from typing import List, Dict
-from ..helpers import to_dict
 
 
-class BasketItem(BaseModel):
-    product_id: str
-    quantity: int
+class BasketItem(db.Model):
+    __tablename__ = 'basket_items'
+
+    id = db.Column(db.Integer, primary_key=True)
+    product_id = db.Column(db.String, nullable=False)
+    quantity = db.Column(db.Integer, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 
 
-class User(BaseModel):
-    username: str = Field(..., min_length=1, max_length=50)
-    email: str
-    password: str = Field(..., min_length=6)
-    fav_products: List[str] = Field(default_factory=list)
-    basket: List[BasketItem] = Field(default_factory=list)
-    purchased_products: List[str] = Field(default_factory=list)
+class User(db.Model):
+    __tablename__ = 'users'
 
-    def to_dict(self) -> Dict:
-        return to_dict(self)
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(50), nullable=False)
+    email = db.Column(db.String(100), unique=True, nullable=False)
+    password = db.Column(db.String(255), nullable=False)
+    fav_products = db.Column(db.ARRAY(db.String), default=[])
+    basket_items = db.relationship('BasketItem', backref='user', lazy=True, cascade="all, delete-orphan")
+    purchased_products = db.Column(db.ARRAY(db.String), default=[])
 
 
 class UserRegistration(BaseModel):

@@ -40,7 +40,7 @@ const NewReview = ({ productId, reviews, onNewReview }) => {
   useEffect(() => {
     // Check if the user has already reviewed this product
     if (username) {
-      const hasReviewed = reviews.some(review => review.Author === username);
+      const hasReviewed = reviews.some(review => review.author === username);
       setCanReview(!hasReviewed);
     }
   }, [reviews, username]);

@@ -80,7 +80,7 @@ export default function Checkout({ products, basket, setBasket }) {
   };
 
   const getProductDetails = (productId) => {
-    return products.find(product => product._id === productId) || {};
+    return products.find(product => product.id === productId) || {};
   };
 
   const handleInputChange = (e, setState) => {

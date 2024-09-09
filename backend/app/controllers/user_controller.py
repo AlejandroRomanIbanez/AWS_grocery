@@ -1,6 +1,6 @@
 from flask import jsonify, request
 from flask_jwt_extended import get_jwt_identity, jwt_required
-from app.services.user_service import add_to_favorites, get_user_favorites, remove_from_favorites, sync_basket_service, \
+from ..services.user_service import add_to_favorites, get_user_favorites, remove_from_favorites, sync_basket_service, \
     get_user_basket, remove_from_basket_service, add_product_to_purchased, get_user_purchased_products, get_user_info
 
 
@@ -31,9 +31,9 @@ def add_favorite():
     product_id = request.json.get("product_id")
 
     result = add_to_favorites(user_id, product_id)
-    if result['nModified'] == 1:
+    if "error" not in result:
         return jsonify({"message": "Product added to favorites"}), 201
-    return jsonify({"error": "Product not added"}), 400
+    return jsonify(result), 400
 
 
 @jwt_required()
@@ -47,9 +47,9 @@ def remove_favorite():
     user_id = get_jwt_identity()
     product_id = request.json.get("product_id")
     result = remove_from_favorites(user_id, product_id)
-    if result['nModified'] == 1:
+    if "error" not in result:
         return jsonify({"message": "Product removed from favorites"}), 200
-    return jsonify({"error": "Product not removed"}), 400
+    return jsonify(result), 400
 
 
 @jwt_required()
@@ -90,8 +90,7 @@ def get_basket():
     """
     user_id = get_jwt_identity()
     basket = get_user_basket(user_id)
-    return jsonify([item for item in basket]), 200
-
+    return jsonify(basket), 200
 
 @jwt_required()
 def remove_from_basket():

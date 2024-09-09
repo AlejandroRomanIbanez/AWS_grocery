@@ -1,5 +1,5 @@
 from flask import Blueprint
-from app.controllers.product_controller import fetch_all_products, get_single_product, add_review, delete_review, update_review
+from ..controllers.product_controller import fetch_all_products, get_single_product, add_review, delete_review, update_review
 
 product_bp = Blueprint('product', __name__, url_prefix='/api/products')
 

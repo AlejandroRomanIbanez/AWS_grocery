@@ -1,8 +1,8 @@
-from app import mongo
+from .. import db
 from bson import ObjectId
 from typing import List, Dict
 from ..helpers import serialize_object_id
-from ..models.product_model import ReviewModel
+from ..models.product_model import Review, Product
 
 
 def get_all_products() -> List[Dict]:
@@ -12,12 +12,10 @@ def get_all_products() -> List[Dict]:
     Returns:
         List[Dict]: A list of dictionaries, each representing a product.
     """
-    products_collection = mongo.grocery.products
-    products = list(products_collection.find())
-    return [serialize_object_id(product) for product in products]
+    products_collection = Product.query.all()
+    return [product.to_dict() for product in products_collection]
 
-
-def get_product_by_id(product_id: str) -> Dict:
+def get_product_by_id(product_id: int) -> Dict:
     """
     Retrieves a product by its ID.
 
@@ -27,14 +25,13 @@ def get_product_by_id(product_id: str) -> Dict:
     Returns:
         Dict: A dictionary representing the product if found, otherwise an empty dictionary.
     """
-    products_collection = mongo.grocery.products
-    product = products_collection.find_one({"_id": ObjectId(product_id)})
+    product = Product.query.get(product_id)
     if product:
-        return serialize_object_id(product)
+        return product.to_dict()
     return {}
 
 
-def add_review_to_product(product_id: str, review_data: ReviewModel) -> Dict:
+def add_review_to_product(product_id: str, review_data: Review) -> Dict:
     """
     Adds a review to the specified product.
 
@@ -45,54 +42,50 @@ def add_review_to_product(product_id: str, review_data: ReviewModel) -> Dict:
     Returns:
         Dict: A dictionary containing the result of the review submission.
     """
-    products_collection = mongo.grocery.products
+    product = Product.query.get(product_id)
+
+    if not product:
+        return {"error": "Product not found"}
+
     review_dict = review_data.dict()
 
-    existing_review = products_collection.find_one(
-        {"_id": ObjectId(product_id), "reviews.Author": review_dict['Author']}
-    )
+    existing_review = Review.query.filter_by(product_id=product_id, author=review_data.Author).first()
 
     if existing_review:
         return {"error": "User has already reviewed this product"}
 
     review_dict['Content'] = ''
 
-    result = products_collection.update_one(
-        {"_id": ObjectId(product_id)},
-        {"$push": {"reviews": review_dict}}
+    new_review = Review(
+        product_id=product_id,
+        author=review_data.Author,
+        rating=review_data.Rating,
+        comment=review_data.Comment
     )
+    db.session.add(new_review)
+    db.session.commit()
 
-    if result.modified_count > 0:
-        return {"message": "Review added successfully"}
-    return {"error": "Product not found or review not added"}
+    return {"message": "Review added successfully"}
 
 
 def remove_review_from_product(product_id: str, author_name: str) -> Dict:
-    products_collection = mongo.grocery.products
+    review = Review.query.filter_by(product_id=product_id, author=author_name).first()
 
-    result = products_collection.update_one(
-        {"_id": ObjectId(product_id), "reviews.Author": author_name},
-        {"$pull": {"reviews": {"Author": author_name}}}
-    )
-
-    if result.modified_count > 0:
+    if review:
+        db.session.delete(review)
+        db.session.commit()
         return {"message": "Review deleted successfully"}
-    return {"error": "Product or review not found"}
+
+    return {"error": "Review not found"}
 
 
 def update_product_review(product_id: str, author_name: str, updated_data: Dict) -> Dict:
-    products_collection = mongo.grocery.products
+    review = Review.query.filter_by(product_id=product_id, author=author_name).first()
 
-    update_fields = {
-        "reviews.$.Rating": updated_data["Rating"],
-        "reviews.$.Comment": updated_data["Comment"]
-    }
-
-    result = products_collection.update_one(
-        {"_id": ObjectId(product_id), "reviews.Author": author_name},
-        {"$set": update_fields}
-    )
-
-    if result.modified_count > 0:
+    if review:
+        review.rating = updated_data["Rating"]
+        review.comment = updated_data["Comment"]
+        db.session.commit()
         return {"message": "Review updated successfully"}
-    return {"error": "Product or review not found"}
+
+    return {"error": "Review not found"}

@@ -1,39 +1,45 @@
-from pydantic import BaseModel, Field, HttpUrl
-from typing import Optional, Dict, List
-from enum import Enum
-from ..helpers import to_dict
+from .. import db
+from sqlalchemy.orm import relationship
+
+class Product(db.Model):
+    __tablename__ = 'products'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.String(500))
+    price = db.Column(db.Float, nullable=False)
+    category = db.Column(db.String(50))
+    image_url = db.Column(db.String(255))
+    is_alcohol = db.Column(db.Boolean, default=False)
+    reviews = relationship('Review', backref='product', lazy=True)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'description': self.description,
+            'price': self.price,
+            'category': self.category,
+            'image_url': self.image_url,
+            'is_alcohol': self.is_alcohol,
+            'reviews': [review.to_dict() for review in self.reviews]
+        }
 
 
-class ReviewModel(BaseModel):
-    Author: str = Field(..., description="Name of the reviewer")
-    Rating: float = Field(..., ge=1, le=5, description="Rating of the product, between 1 and 5")
-    Comment: str = Field(..., max_length=500, description="Review comment, up to 500 characters")
+class Review(db.Model):
+    __tablename__ = 'reviews'
 
-class ProductCategory(Enum):
-    FRUITS = "Fruits"
-    VEGETABLES = "Vegetables"
-    DAIRY = "Dairy"
-    MEAT = "Meat"
-    BAKERY = "Bakery"
-    BEVERAGES = "Beverages"
-    SNACKS = "Snacks"
-    CANNED_GOODS = "Canned Goods"
-    FROZEN_FOODS = "Frozen Foods"
-    HOUSEHOLD = "Household"
-    PERSONAL_CARE = "Personal Care"
-    CLEANING_SUPPLIES = "Cleaning Supplies"
-    PANTRY = "Pantry"
-    ALCOHOL = "Alcohol"
+    id = db.Column(db.Integer, primary_key=True)
+    product_id = db.Column(db.Integer, db.ForeignKey('products.id'), nullable=False)
+    author = db.Column(db.String(100), nullable=False)
+    rating = db.Column(db.Float, nullable=False)
+    comment = db.Column(db.String(500), nullable=True)
 
-
-class ProductModel(BaseModel):
-    name: str = Field(..., description="Name of the product")
-    description: str = Field(..., description="Description of the product")
-    price: float = Field(..., gt=0, description="Price of the product, must be greater than 0")
-    category: ProductCategory = Field(..., description="Category of the product")
-    image_url: HttpUrl = Field(..., description="URL of the product image")
-    is_alcohol: bool = Field(default=False, description="Indicates if the product is alcoholic")
-    reviews: Optional[List[ReviewModel]] = Field(default=None, description="List of reviews for the product")
-
-    def to_dict(self) -> Dict:
-        return to_dict(self)
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'product_id': self.product_id,
+            'author': self.author,
+            'rating': self.rating,
+            'comment': self.comment,
+        }

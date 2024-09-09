@@ -13,6 +13,7 @@ const ProductDetail = () => {
   const [userPurchasedProducts, setUserPurchasedProducts] = useState([]);
   const [hasReviewed, setHasReviewed] = useState(false);
   const [canLeaveReview, setCanLeaveReview] = useState(false);
+  console.log("Product ID:", productId);
 
   useEffect(() => {
     const fetchProductDetail = async () => {
@@ -48,7 +49,7 @@ const ProductDetail = () => {
     if (productDetailItem) {
       const purchased = userPurchasedProducts.includes(productId);
       setCanLeaveReview(purchased);
-      setHasReviewed(purchased && productDetailItem.reviews.some(review => review.Author === localStorage.getItem('username')));
+      setHasReviewed(purchased && productDetailItem.reviews.some(review => review.author === localStorage.getItem('username')));
     }
   }, [userPurchasedProducts, productDetailItem, productId]);
 
@@ -67,8 +68,8 @@ const ProductDetail = () => {
 
   const calculateAverageRating = (reviews) => {
     if (!reviews || reviews.length === 0) return 0;
-    const totalRating = reviews.reduce((acc, review) => acc + review.Rating, 0);
-    return (totalRating / reviews.length).toFixed(1);
+    const totalRating = reviews.reduce((acc, review) => acc + (review.rating || 0), 0);
+    return Number((totalRating / reviews.length).toFixed(1));
   };
 
   const handleDeleteReview = async (authorName) => {
@@ -82,7 +83,7 @@ const ProductDetail = () => {
       setProductDetailItem(prevItem => ({
         ...prevItem,
         reviews: prevItem.reviews.filter(
-          review => review.Author !== authorName
+          review => review.author !== authorName
         )
       }));
       setHasReviewed(false);
@@ -105,7 +106,7 @@ const ProductDetail = () => {
       setProductDetailItem(prevItem => ({
         ...prevItem,
         reviews: prevItem.reviews.map(review =>
-          review.Author === authorName
+          review.author === authorName
             ? { ...review, Rating: newRating, Comment: newComment }
             : review
         )

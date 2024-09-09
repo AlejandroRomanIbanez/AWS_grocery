@@ -45,9 +45,9 @@ const Search = ({ products }) => {
                 <div className='suggestions'>
                     {suggestions.map((suggestion) => (
                         <div 
-                        key={suggestion._id} 
+                        key={suggestion.id} 
                         className='suggestion-item' 
-                        onClick={() => handleSuggestionClick(suggestion._id)}
+                        onClick={() => handleSuggestionClick(suggestion.id)}
                     >
                         <p><strong>{suggestion.name}</strong></p>
                         <p>{suggestion.description}</p>

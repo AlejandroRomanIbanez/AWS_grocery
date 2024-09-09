@@ -1,15 +1,22 @@
 from flask import Flask
 from flask_cors import CORS
-from pymongo import MongoClient
+from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager
+from flask_migrate import Migrate
 from dotenv import load_dotenv
 from datetime import timedelta
 import os
 
 load_dotenv()
+db = SQLAlchemy()
 
-mongo_uri = os.getenv("MONGO_URI")
-mongo = MongoClient(mongo_uri)
+class Config:
+    """App configuration variables."""
+    POSTGRES_URI = os.getenv("POSTGRES_URI")
+    SQLALCHEMY_DATABASE_URI = POSTGRES_URI
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+    JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=4)
 
 
 def create_app():
@@ -24,10 +31,11 @@ def create_app():
     """
     app = Flask(__name__)
     CORS(app, resources={r"/*": {"origins": "*"}})
+    app.config.from_object(Config)
 
-    app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY")
-    app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(hours=4)
-    jwt = JWTManager(app)
+    db.init_app(app)
+    JWTManager(app)
+    Migrate(app, db)
 
     from .routes.auth_routes import auth_bp
     from .routes.user_routes import user_bp
@@ -36,7 +44,5 @@ def create_app():
     app.register_blueprint(auth_bp)
     app.register_blueprint(user_bp)
     app.register_blueprint(product_bp)
-
-    jwt.init_app(app)
 
     return app

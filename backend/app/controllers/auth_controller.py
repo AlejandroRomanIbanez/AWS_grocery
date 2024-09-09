@@ -2,9 +2,9 @@ from flask import request, jsonify
 from flask_jwt_extended import create_access_token
 from pydantic import ValidationError
 
-from app.helpers import serialize_object_id, format_validation_error
-from app.models.user_model import UserRegistration, UserLogin
-from app.services.auth_service import register_user, login_user
+from ..helpers import format_validation_error
+from ..models.user_model import UserRegistration, UserLogin
+from ..services.auth_service import register_user, login_user
 
 
 def register():
@@ -23,9 +23,7 @@ def register():
         formatted_error = format_validation_error(e)
         return jsonify({'error': formatted_error}), 400
 
-    data_serialized = serialize_object_id(data)
-
-    response, status = register_user(data_serialized)
+    response, status = register_user(data)
 
     return jsonify(response), status
 
@@ -48,7 +46,7 @@ def login():
         formatted_error = format_validation_error(e)
         return jsonify({'error': formatted_error}), 400
 
-        # Authenticate the user
+    # Authenticate the user
     user = login_user(data)
     if 'error' in user:
         return jsonify(user), 401  # Return 401 if authentication fails

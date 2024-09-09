@@ -1,6 +1,7 @@
 from werkzeug.security import generate_password_hash, check_password_hash
-from app import mongo
-from app.helpers import serialize_object_id
+from ..helpers import serialize_object_id
+from ..models.user_model import User
+from .. import db
 
 
 def register_user(data):
@@ -20,14 +21,15 @@ def register_user(data):
     email = data.email
     password = generate_password_hash(data.password)
 
-    if mongo.grocery.users.find_one({'username': username}):
+    if User.query.filter_by(username=username).first():
         return {'error': 'Username already exists'}, 400
 
-    mongo.grocery.users.insert_one({'email': email,
-                                    'username': username,
-                                    'password': password,
-                                    'basket': [],
-                                    'fav_products': []})
+    if User.query.filter_by(email=email).first():
+        return {'error': 'Email already exists'}, 400
+
+    new_user = User(username=username, email=email, password=password)
+    db.session.add(new_user)
+    db.session.commit()
     return {'message': 'User registered successfully'}, 201
 
 
@@ -46,8 +48,15 @@ def login_user(data):
     email = data.email
     password = data.password
 
-    user = mongo.grocery.users.find_one({'email': email})
-    if not user or not check_password_hash(user['password'], password):
+    user = User.query.filter_by(email=email).first()
+
+    if not user or not check_password_hash(user.password, password):
         return {'error': 'Invalid username or password'}
 
-    return serialize_object_id(user)
+    return {
+        '_id': user.id,
+        'username': user.username,
+        'email': user.email,
+        'fav_products': user.fav_products,
+        'purchased_products': user.purchased_products
+    }

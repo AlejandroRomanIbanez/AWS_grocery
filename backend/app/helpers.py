@@ -1,7 +1,6 @@
 from bson import ObjectId
 from typing import Any, Dict
 
-
 def serialize_object_id(obj: Any) -> Any:
     """
     Serializes ObjectId instances within a given object to strings.
