@@ -3,10 +3,11 @@ from bson.objectid import ObjectId
 from ..helpers import serialize_object_id
 from ..models.user_model import User, BasketItem
 from ..models.product_model import Product
+from sqlalchemy import cast, ARRAY, Integer
 from typing import List, Dict
 
 
-def get_user_info(user_id: str) -> dict:
+def get_user_info(user_id: int) -> dict:
     """
     Retrieves the user's information from the database.
 
@@ -28,36 +29,35 @@ def get_user_info(user_id: str) -> dict:
     return {}
 
 
-def add_to_favorites(user_id: str, product_id: str) -> dict:
-    """
-    Adds a product to the user's list of favorite products in the database.
-
-    Args:
-        user_id (str): The ID of the user.
-        product_id (str): The ID of the product to add.
-
-    Returns:
-        dict: The raw result of the update operation.
-    """
+def add_to_favorites(user_id: int, product_id: int) -> dict:
     user = User.query.get(user_id)
     if not user:
         return {"error": "User not found"}
 
     if product_id not in user.fav_products:
-        user.fav_products.append(product_id)
-        db.session.commit()
+        user.fav_products = cast(user.fav_products + [product_id], ARRAY(Integer))
+        print(f"user.fav_products before commit: {user.fav_products}")
+
+        try:
+            db.session.commit()
+            print("Commit successful")
+        except Exception as e:
+            db.session.rollback()
+            print(f"Error committing changes: {e}")
+            return {"error": "Failed to save changes"}
+
         return {"message": "Product added to favorites"}
 
     return {"message": "Product already in favorites"}
 
 
-def remove_from_favorites(user_id: str, product_id: str) -> dict:
+def remove_from_favorites(user_id: int, product_id: int) -> dict:
     """
     Removes a product from the user's list of favorite products in the database.
 
     Args:
-        user_id (str): The ID of the user.
-        product_id (str): The ID of the product to remove.
+        user_id (int): The ID of the user.
+        product_id (int): The ID of the product to remove.
 
     Returns:
         dict: The raw result of the update operation.
@@ -67,14 +67,23 @@ def remove_from_favorites(user_id: str, product_id: str) -> dict:
         return {"error": "User not found"}
 
     if product_id in user.fav_products:
-        user.fav_products.remove(product_id)
-        db.session.commit()
-        return {"message": "Product removed from favorites"}
+        # Cast the updated list to ARRAY(Integer) before committing
+        user.fav_products = cast([p for p in user.fav_products if p != product_id], ARRAY(Integer))
+        print(f"user.fav_products before commit: {user.fav_products}")
+
+        try:
+            db.session.commit()
+            print("Commit successful")
+            return {"message": "Product removed from favorites"}
+        except Exception as e:
+            db.session.rollback()
+            print(f"Error committing changes: {e}")
+            return {"error": "Failed to save changes"}
 
     return {"error": "Product not found in favorites"}
 
 
-def get_user_favorites(user_id: str) -> list:
+def get_user_favorites(user_id: int) -> list:
     """
     Retrieves the user's list of favorite products from the database.
 
@@ -86,11 +95,12 @@ def get_user_favorites(user_id: str) -> list:
     """
     user = User.query.get(user_id)
     if user:
-        return user.fav_products
+        favorite_products = Product.query.filter(Product.id.in_(user.fav_products)).all()
+        return [product.to_dict() for product in favorite_products]
     return []
 
 
-def sync_basket_service(user_id: str, basket: List[Dict]) -> dict:
+def sync_basket_service(user_id: int, basket: List[Dict]) -> dict:
     """
     Synchronizes the user's basket with the provided basket data in the database.
 
@@ -140,7 +150,7 @@ def sync_basket_service(user_id: str, basket: List[Dict]) -> dict:
     return {"message": "Basket successfully updated."}
 
 
-def get_user_basket(user_id: str) -> List[Dict]:
+def get_user_basket(user_id: int) -> List[Dict]:
     """
     Retrieves the user's current basket from the database.
 
@@ -167,7 +177,7 @@ def get_user_basket(user_id: str) -> List[Dict]:
     return basket_with_details
 
 
-def remove_from_basket_service(user_id: str, product_id: str) -> dict:
+def remove_from_basket_service(user_id: int, product_id: int) -> dict:
     """
     Removes a product from the user's basket in the database.
 
@@ -187,7 +197,7 @@ def remove_from_basket_service(user_id: str, product_id: str) -> dict:
     return {"error": "Product not found in basket"}
 
 
-def add_product_to_purchased(user_id: str, product_ids: List[str]) -> dict:
+def add_product_to_purchased(user_id: int, product_ids: List[int]) -> dict:
     """
     Adds a product to the user's set of purchased products.
     Args:
@@ -206,7 +216,7 @@ def add_product_to_purchased(user_id: str, product_ids: List[str]) -> dict:
     return {"message": "Products purchased successfully"}
 
 
-def get_user_purchased_products(user_id: str) -> List[Dict]:
+def get_user_purchased_products(user_id: int) -> List[Dict]:
     """
     Retrieves the user's list of purchased products from the database.
     Args:

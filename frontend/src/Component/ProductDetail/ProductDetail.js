@@ -47,7 +47,7 @@ const ProductDetail = () => {
 
   useEffect(() => {
     if (productDetailItem) {
-      const purchased = userPurchasedProducts.includes(productId);
+      const purchased = userPurchasedProducts.includes(Number(productId));
       setCanLeaveReview(purchased);
       setHasReviewed(purchased && productDetailItem.reviews.some(review => review.author === localStorage.getItem('username')));
     }
@@ -56,7 +56,7 @@ const ProductDetail = () => {
   const handleNewReview = (newReview) => {
     const modifiedReview = {
       ...newReview,
-      Comment: ""
+      comment: ""
   };
     setProductDetailItem((prevItem) => ({
       ...prevItem,
@@ -96,8 +96,8 @@ const ProductDetail = () => {
     try {
       await axios.put(`${process.env.REACT_APP_BACKEND_SERVER}/api/products/${productId}/update-review`, {
         author_name: authorName,
-        Rating: newRating,
-        Comment: newComment
+        rating: newRating,
+        comment: newComment
       }, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -107,7 +107,7 @@ const ProductDetail = () => {
         ...prevItem,
         reviews: prevItem.reviews.map(review =>
           review.author === authorName
-            ? { ...review, Rating: newRating, Comment: newComment }
+            ? { ...review, rating: newRating, comment: newComment }
             : review
         )
       }));

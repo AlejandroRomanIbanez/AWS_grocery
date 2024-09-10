@@ -66,8 +66,8 @@ const NewReview = ({ productId, reviews, onNewReview }) => {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
         },
         body: JSON.stringify({
-          Rating: rating,
-          Comment: "",  // This is the subtle bug; you might use "comment" instead to fix it.
+          rating: rating,
+          comment: "",  // This is the subtle bug; you might use "comment" instead to fix it.
         }),
       });
   
@@ -76,7 +76,7 @@ const NewReview = ({ productId, reviews, onNewReview }) => {
         toast.success('Review submitted successfully');
         setCanReview(false);
         // Trigger the callback to update the parent component's state
-        onNewReview({ Author: username, Rating: rating, Comment: comment });
+        onNewReview({ author: username, rating: rating, comment: comment });
       } else {
         toast.error(`${result.message || result.error}`);
       }

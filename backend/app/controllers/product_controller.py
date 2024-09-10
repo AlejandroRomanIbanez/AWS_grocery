@@ -66,7 +66,7 @@ def add_review(product_id):
 
         # Prepare review data with the author's name
         review_data = request.json
-        review_data['Author'] = user_info.get('username', 'Anonymous')
+        review_data['author'] = user_info.get('username', 'Anonymous')
 
         response = add_review_to_product(product_id, review_data)
         return jsonify(response), 200
@@ -94,18 +94,18 @@ def update_review(product_id):
         if not author_name:
             return jsonify({"error": "Author name is required"}), 400
         try:
-            rating = int(data.get("Rating"))
+            rating = int(data.get("rating"))
             if rating < 1 or rating > 5:
-                return jsonify({"error": "Rating must be between 1 and 5"}), 400
+                return jsonify({"error": "rating must be between 1 and 5"}), 400
         except (ValueError, TypeError):
             return jsonify({"error": "Invalid rating value"}), 400
 
         updated_data = {
-            "Rating": rating,
-            "Comment": data.get("Comment")
+            "rating": rating,
+            "comment": data.get("comment")
         }
 
-        if updated_data["Comment"] is None:
+        if updated_data["comment"] is None:
             return jsonify({"error": "Comment is required"}), 400
 
         response = update_product_review(product_id, author_name, updated_data)

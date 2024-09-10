@@ -31,41 +31,42 @@ def get_product_by_id(product_id: int) -> Dict:
     return {}
 
 
-def add_review_to_product(product_id: str, review_data: Review) -> Dict:
+def add_review_to_product(product_id: str, review_data: Dict) -> Dict:
     """
     Adds a review to the specified product.
 
     Args:
         product_id (str): The ID of the product.
-        review_data (ReviewModel): The review data.
+        review_data (Dict): The review data as a dictionary.
 
     Returns:
         Dict: A dictionary containing the result of the review submission.
     """
     product = Product.query.get(product_id)
+    print(f"review_data: {review_data}")
 
     if not product:
         return {"error": "Product not found"}
 
-    review_dict = review_data.dict()
-
-    existing_review = Review.query.filter_by(product_id=product_id, author=review_data.Author).first()
+    # Accessing dictionary keys directly instead of using object attributes
+    existing_review = Review.query.filter_by(product_id=product_id, author=review_data["author"]).first()
 
     if existing_review:
         return {"error": "User has already reviewed this product"}
 
-    review_dict['Content'] = ''
-
+    # Manually creating the review based on the dictionary data
     new_review = Review(
         product_id=product_id,
-        author=review_data.Author,
-        rating=review_data.Rating,
-        comment=review_data.Comment
+        author=review_data["author"],
+        rating=review_data["rating"],
+        comment=review_data.get("comment", "")
     )
+
     db.session.add(new_review)
     db.session.commit()
 
     return {"message": "Review added successfully"}
+
 
 
 def remove_review_from_product(product_id: str, author_name: str) -> Dict:
@@ -83,8 +84,8 @@ def update_product_review(product_id: str, author_name: str, updated_data: Dict)
     review = Review.query.filter_by(product_id=product_id, author=author_name).first()
 
     if review:
-        review.rating = updated_data["Rating"]
-        review.comment = updated_data["Comment"]
+        review.rating = updated_data["rating"]
+        review.comment = updated_data["comment"]
         db.session.commit()
         return {"message": "Review updated successfully"}
 

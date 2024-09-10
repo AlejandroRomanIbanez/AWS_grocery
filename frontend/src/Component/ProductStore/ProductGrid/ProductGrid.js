@@ -16,6 +16,7 @@ const ProductGrid = ({ products, isFav, basket, setBasket, filterByCategory, res
   const [userAgeVerified, setUserAgeVerified] = useState(sessionStorage.getItem('userAgeVerified') === 'true');
   const [underage, setUnderage] = useState(sessionStorage.getItem('underage') === 'true');
   const navigate = useNavigate();
+  console.log("favProductIds", favProductIds);
 
   const productsPerPage = 12;
 
@@ -23,7 +24,7 @@ const ProductGrid = ({ products, isFav, basket, setBasket, filterByCategory, res
     if (!userAgeVerified) return;
 
     const fetchFavorites = async () => {
-      if (isFav && loading) {
+      if (loading) {
         try {
           const token = localStorage.getItem('token');
           if (!token) return;
@@ -204,7 +205,9 @@ const ProductGrid = ({ products, isFav, basket, setBasket, filterByCategory, res
       )}
       <div className="product-grid">
         {loading ? (
-          <ProductGridSkeleton />
+          <div key="skeleton">
+            <ProductGridSkeleton />
+          </div>
         ) : currentProducts.length > 0 ? (
           currentProducts.map(product => (
             <div 
