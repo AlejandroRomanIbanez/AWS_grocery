@@ -77,6 +77,7 @@ function App() {
             Authorization: `Bearer ${token}`
           }
         });
+        console.log("Basket data", response.data);
         setBasket(response.data);
       } catch (error) {
         console.error('Failed to fetch basket:', error);

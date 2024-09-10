@@ -2,6 +2,7 @@ from .. import db
 from bson.objectid import ObjectId
 from ..helpers import serialize_object_id
 from ..models.user_model import User, BasketItem
+from ..models.product_model import Product
 from typing import List, Dict
 
 
@@ -103,14 +104,39 @@ def sync_basket_service(user_id: str, basket: List[Dict]) -> dict:
     user = User.query.get(user_id)
     if not user:
         return {"error": "User not found"}
-    BasketItem.query.filter_by(user_id=user_id).delete()
 
-    # Add new basket items
+    existing_items = BasketItem.query.filter_by(user_id=user_id).all()
+    existing_product_ids = {item.product_id for item in existing_items}
+    incoming_product_ids = {item['product_id'] for item in basket}
+
+    items_to_delete = existing_product_ids - incoming_product_ids
+
+    for product_id in items_to_delete:
+        item_to_delete = BasketItem.query.filter_by(user_id=user_id, product_id=product_id).first()
+        if item_to_delete:
+            print(f"Deleting item with product_id: {product_id}")
+            db.session.delete(item_to_delete)
+
     for item in basket:
-        new_item = BasketItem(user_id=user_id, product_id=item['product_id'], quantity=item['quantity'])
-        db.session.add(new_item)
+        product_id = item['product_id']
+        existing_item = BasketItem.query.filter_by(user_id=user_id, product_id=product_id).first()
 
-    db.session.commit()
+        if existing_item:
+            print(f"Updating item with product_id: {product_id} to quantity: {item['quantity']}")
+            existing_item.quantity = item['quantity']
+        else:
+            print(f"Adding new item with product_id: {product_id} and quantity: {item['quantity']}")
+            new_item = BasketItem(user_id=user_id, product_id=product_id, quantity=item['quantity'])
+            db.session.add(new_item)
+
+    try:
+        # Commit the changes
+        db.session.commit()
+        print("Basket successfully updated")
+    except Exception as e:
+        print(f"Error committing changes to the database: {e}")
+        return {"error": "Failed to update basket"}
+
     return {"message": "Basket successfully updated."}
 
 
@@ -126,7 +152,19 @@ def get_user_basket(user_id: str) -> List[Dict]:
     """
     basket_items = BasketItem.query.filter_by(user_id=user_id).all()
 
-    return [{"product_id": item.product_id, "quantity": item.quantity} for item in basket_items]
+    basket_with_details = []
+    for item in basket_items:
+        # Fetch product details using the product_id
+        product = Product.query.get(item.product_id)
+        if product:
+            basket_with_details.append({
+                "product_id": item.product_id,
+                "quantity": item.quantity,
+                "name": product.name,
+                "price": product.price,
+                "image_url": product.image_url,
+            })
+    return basket_with_details
 
 
 def remove_from_basket_service(user_id: str, product_id: str) -> dict:

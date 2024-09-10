@@ -10,6 +10,7 @@ export default function Checkout({ products, basket, setBasket }) {
   const [payment, setPayment] = useState({ cardNumber: '', nameOnCard: '', expiration: '', cvv: '' });
   const [freeShippingAchieved, setFreeShippingAchieved] = useState(false);
   const navigate = useNavigate();
+  console.log("Basket data checkout", basket);
 
   useEffect(() => {
     setProductQuantities(basket.reduce((acc, item) => {
