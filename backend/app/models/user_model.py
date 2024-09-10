@@ -28,6 +28,7 @@ class User(db.Model):
     fav_products = db.Column(db.ARRAY(db.Integer), default=[])
     basket_items = db.relationship('BasketItem', backref='user', lazy=True, cascade="all, delete-orphan")
     purchased_products = db.Column(db.ARRAY(db.Integer), default=[])
+    avatar = db.Column(db.String(255), nullable=True)
 
 
 class UserRegistration(BaseModel):

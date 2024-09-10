@@ -1,11 +1,15 @@
+import os
 from flask import current_app
+from werkzeug.utils import secure_filename
+from typing import List, Dict
+from sqlalchemy import cast, ARRAY, Integer
 from .. import db
-from bson.objectid import ObjectId
-from ..helpers import serialize_object_id
 from ..models.user_model import User, BasketItem
 from ..models.product_model import Product
-from sqlalchemy import cast, ARRAY, Integer
-from typing import List, Dict
+
+
+UPLOAD_FOLDER = os.path.join(os.getcwd(), 'avatar')
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
 
 def get_user_info(user_id: int) -> dict:
@@ -272,3 +276,49 @@ def clear_user_basket(user_id: int):
         db.session.rollback()
         current_app.logger.error(f"Error clearing basket for user {user_id}: {e}")
         return {"error": "Failed to clear basket"}
+
+
+def allowed_file(filename):
+    """
+    Check if the file has one of the allowed extensions.
+    """
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+def save_avatar(user_id, file):
+    """
+    Save the user's avatar in the images folder and update the user's avatar in the database.
+
+    Args:
+        user_id (int): The ID of the user.
+        file (FileStorage): The uploaded file.
+
+    Returns:
+        dict: A dictionary with the status of the operation.
+    """
+    if not allowed_file(file.filename):
+        return {"error": "File type not allowed"}
+
+    user = User.query.get(user_id)
+    if not user:
+        current_app.logger.error(f"User with ID {user_id} not found.")
+        return {"error": "User not found"}
+
+    # Secure the filename and save the file
+    filename = secure_filename(f"user_{user_id}_{file.filename}")
+    filepath = os.path.join(UPLOAD_FOLDER, filename)
+
+    try:
+        os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+        file.save(filepath)
+        current_app.logger.info(f"File saved successfully at {filepath} for user {user_id}.")
+
+        user.avatar = filename
+        db.session.commit()
+        current_app.logger.info(f"User {user_id}'s avatar updated to {filename}.")
+
+        return {"message": "Avatar uploaded successfully", "avatar_url": filepath}
+    except Exception as e:
+        current_app.logger.error(f"Error saving avatar for user {user_id}: {e}")
+        return {"error": "Failed to upload avatar"}

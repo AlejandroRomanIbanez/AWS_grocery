@@ -1,10 +1,12 @@
 from flask import Blueprint
 from ..controllers.user_controller import add_favorite, get_favorites, remove_favorite, sync_basket, get_basket, \
-    remove_from_basket, purchase_product, get_purchased_products, get_current_user_info
+    remove_from_basket, purchase_product, get_purchased_products, get_current_user_info, upload_avatar, serve_avatar
 
 user_bp = Blueprint('favorite', __name__, url_prefix='/api/me')
 
 user_bp.route('/info', methods=['GET'])(get_current_user_info)
+user_bp.route('/avatar', methods=['POST'])(upload_avatar)
+user_bp.route('/avatar/<filename>', methods=['GET'])(serve_avatar)
 
 user_bp.route('/favorites', methods=['POST'])(add_favorite)
 user_bp.route('/favorites/remove', methods=['POST'])(remove_favorite)

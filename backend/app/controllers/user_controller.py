@@ -1,9 +1,8 @@
-from flask import jsonify, request, current_app
+from flask import jsonify, request, current_app, send_from_directory
 from flask_jwt_extended import get_jwt_identity, jwt_required
 from ..services.user_service import add_to_favorites, get_user_favorites, remove_from_favorites, sync_basket_service, \
     get_user_basket, remove_from_basket_service, add_product_to_purchased, get_user_purchased_products, get_user_info, \
-    clear_user_basket
-
+    clear_user_basket, save_avatar, UPLOAD_FOLDER
 
 @jwt_required()
 def get_current_user_info():
@@ -185,3 +184,35 @@ def get_purchased_products():
     current_app.logger.info(f"Purchased products for user {user_id} retrieved successfully.")
 
     return jsonify(purchased_products), 200
+
+
+@jwt_required()
+def upload_avatar():
+    """
+    Handle avatar upload for the current logged-in user.
+
+    Returns:
+        JSON: A JSON response indicating success or failure.
+    """
+    user_id = get_jwt_identity()
+
+    if 'file' not in request.files:
+        return jsonify({"error": "No file part"}), 400
+
+    file = request.files['file']
+
+    if file.filename == '':
+        return jsonify({"error": "No selected file"}), 400
+
+    result = save_avatar(user_id, file)
+
+    if 'error' in result:
+        return jsonify(result), 400
+    else:
+        return jsonify(result), 200
+
+def serve_avatar(filename):
+    """
+    Serve the avatar image from the avatar folder.
+    """
+    return send_from_directory(UPLOAD_FOLDER, filename)
