@@ -1,4 +1,4 @@
-from flask import request, jsonify
+from flask import request, jsonify, current_app
 from flask_jwt_extended import create_access_token
 from pydantic import ValidationError
 
@@ -19,11 +19,18 @@ def register():
     """
     try:
         data = UserRegistration(**request.get_json())
+        current_app.logger.info(f"Received registration data for user: {data.username}")
     except ValidationError as e:
         formatted_error = format_validation_error(e)
+        current_app.logger.error(f"Validation error during registration: {formatted_error}")
         return jsonify({'error': formatted_error}), 400
 
     response, status = register_user(data)
+
+    if status == 201:
+        current_app.logger.info(f"User {data.username} registered successfully.")
+    else:
+        current_app.logger.warning(f"Failed to register user {data.username}: {response['error']}")
 
     return jsonify(response), status
 
@@ -39,18 +46,18 @@ def login():
         tuple: JSON response and HTTP status code.
     """
     try:
-        # Attempt to parse and validate the incoming data against the UserLogin model
         data = UserLogin(**request.get_json())
+        current_app.logger.info(f"Received login attempt for user: {data.email}")
     except ValidationError as e:
-        # If validation fails, format the error and return a 400 Bad Request response
         formatted_error = format_validation_error(e)
+        current_app.logger.error(f"Validation error during login: {formatted_error}")
         return jsonify({'error': formatted_error}), 400
 
-    # Authenticate the user
     user = login_user(data)
     if 'error' in user:
-        return jsonify(user), 401  # Return 401 if authentication fails
+        current_app.logger.warning(f"Login failed for user {data.email}: {user['error']}")
+        return jsonify(user), 401
 
-    # Create access token if authentication is successful
     access_token = create_access_token(identity=str(user['_id']))
-    return jsonify({'access_token': access_token}), 200  # Return 200 OK with the access token
+    current_app.logger.info(f"User {user['username']} logged in successfully.")
+    return jsonify({'access_token': access_token}), 200

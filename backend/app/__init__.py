@@ -1,3 +1,6 @@
+import logging
+from logging.handlers import RotatingFileHandler
+import os
 from flask import Flask
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
@@ -5,7 +8,7 @@ from flask_jwt_extended import JWTManager
 from flask_migrate import Migrate
 from dotenv import load_dotenv
 from datetime import timedelta
-import os
+
 
 load_dotenv()
 db = SQLAlchemy()
@@ -36,6 +39,7 @@ def create_app():
     db.init_app(app)
     JWTManager(app)
     Migrate(app, db)
+    setup_logging(app)
 
     from .routes.auth_routes import auth_bp
     from .routes.user_routes import user_bp
@@ -46,3 +50,29 @@ def create_app():
     app.register_blueprint(product_bp)
 
     return app
+
+
+def setup_logging(app):
+    """
+    Set up logging to a file, creating the log file if it doesn't exist.
+    Logs will rotate when they reach a certain size.
+    """
+    if not os.path.exists('logs'):
+        os.mkdir('logs')
+
+    log_file = 'logs/app.log'
+
+
+    file_handler = RotatingFileHandler(log_file, maxBytes=1024 * 1024, backupCount=5)
+    file_handler.setLevel(logging.INFO)
+
+
+    formatter = logging.Formatter(
+        '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    )
+    file_handler.setFormatter(formatter)
+
+
+    app.logger.addHandler(file_handler)
+
+    app.logger.setLevel(logging.INFO)

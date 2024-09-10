@@ -1,3 +1,4 @@
+from flask import current_app
 from .. import db
 from bson.objectid import ObjectId
 from ..helpers import serialize_object_id
@@ -19,6 +20,7 @@ def get_user_info(user_id: int) -> dict:
     """
     user = User.query.get(user_id)
     if user:
+        current_app.logger.info(f"Retrieved info for user {user.username} (ID: {user_id})")
         return {
             "username": user.username,
             "email": user.email,
@@ -26,24 +28,26 @@ def get_user_info(user_id: int) -> dict:
             "basket": [item.to_dict() for item in user.basket_items],
             "purchased_products": user.purchased_products
         }
+    current_app.logger.warning(f"User with ID {user_id} not found.")
     return {}
 
 
 def add_to_favorites(user_id: int, product_id: int) -> dict:
     user = User.query.get(user_id)
     if not user:
+        current_app.logger.error(f"User with ID {user_id} not found.")
         return {"error": "User not found"}
 
     if product_id not in user.fav_products:
         user.fav_products = cast(user.fav_products + [product_id], ARRAY(Integer))
-        print(f"user.fav_products before commit: {user.fav_products}")
+        current_app.logger.info(f"Adding product {product_id} to user {user_id}'s favorites.")
 
         try:
             db.session.commit()
-            print("Commit successful")
+            current_app.logger.info(f"Product {product_id} added to favorites for user {user_id}.")
         except Exception as e:
             db.session.rollback()
-            print(f"Error committing changes: {e}")
+            current_app.logger.error(f"Error adding product {product_id} to favorites for user {user_id}: {e}")
             return {"error": "Failed to save changes"}
 
         return {"message": "Product added to favorites"}
@@ -64,22 +68,23 @@ def remove_from_favorites(user_id: int, product_id: int) -> dict:
     """
     user = User.query.get(user_id)
     if not user:
+        current_app.logger.error(f"User with ID {user_id} not found.")
         return {"error": "User not found"}
 
     if product_id in user.fav_products:
-        # Cast the updated list to ARRAY(Integer) before committing
         user.fav_products = cast([p for p in user.fav_products if p != product_id], ARRAY(Integer))
-        print(f"user.fav_products before commit: {user.fav_products}")
+        current_app.logger.info(f"Removing product {product_id} from user {user_id}'s favorites.")
 
         try:
             db.session.commit()
-            print("Commit successful")
+            current_app.logger.info(f"Product {product_id} removed from favorites for user {user_id}.")
             return {"message": "Product removed from favorites"}
         except Exception as e:
             db.session.rollback()
-            print(f"Error committing changes: {e}")
+            current_app.logger.error(f"Error removing product {product_id} from favorites for user {user_id}: {e}")
             return {"error": "Failed to save changes"}
 
+    current_app.logger.warning(f"Product {product_id} not found in user {user_id}'s favorites.")
     return {"error": "Product not found in favorites"}
 
 
@@ -96,7 +101,9 @@ def get_user_favorites(user_id: int) -> list:
     user = User.query.get(user_id)
     if user:
         favorite_products = Product.query.filter(Product.id.in_(user.fav_products)).all()
+        current_app.logger.info(f"Fetched {len(favorite_products)} favorite products for user {user_id}.")
         return [product.to_dict() for product in favorite_products]
+    current_app.logger.warning(f"No favorites found for user {user_id}.")
     return []
 
 
@@ -113,6 +120,7 @@ def sync_basket_service(user_id: int, basket: List[Dict]) -> dict:
     """
     user = User.query.get(user_id)
     if not user:
+        current_app.logger.error(f"User with ID {user_id} not found.")
         return {"error": "User not found"}
 
     existing_items = BasketItem.query.filter_by(user_id=user_id).all()
@@ -120,31 +128,31 @@ def sync_basket_service(user_id: int, basket: List[Dict]) -> dict:
     incoming_product_ids = {item['product_id'] for item in basket}
 
     items_to_delete = existing_product_ids - incoming_product_ids
+    current_app.logger.info(f"Syncing basket for user {user_id}. Items to delete: {items_to_delete}")
 
     for product_id in items_to_delete:
         item_to_delete = BasketItem.query.filter_by(user_id=user_id, product_id=product_id).first()
         if item_to_delete:
-            print(f"Deleting item with product_id: {product_id}")
             db.session.delete(item_to_delete)
+            current_app.logger.info(f"Deleted item with product_id {product_id} for user {user_id}")
 
     for item in basket:
         product_id = item['product_id']
         existing_item = BasketItem.query.filter_by(user_id=user_id, product_id=product_id).first()
 
         if existing_item:
-            print(f"Updating item with product_id: {product_id} to quantity: {item['quantity']}")
             existing_item.quantity = item['quantity']
+            current_app.logger.info(f"Updated item {product_id} to quantity {item['quantity']} for user {user_id}")
         else:
-            print(f"Adding new item with product_id: {product_id} and quantity: {item['quantity']}")
             new_item = BasketItem(user_id=user_id, product_id=product_id, quantity=item['quantity'])
             db.session.add(new_item)
+            current_app.logger.info(f"Added new item {product_id} with quantity {item['quantity']} for user {user_id}")
 
     try:
-        # Commit the changes
         db.session.commit()
-        print("Basket successfully updated")
+        current_app.logger.info(f"Basket successfully synced for user {user_id}")
     except Exception as e:
-        print(f"Error committing changes to the database: {e}")
+        current_app.logger.error(f"Error syncing basket for user {user_id}: {e}")
         return {"error": "Failed to update basket"}
 
     return {"message": "Basket successfully updated."}
@@ -164,7 +172,6 @@ def get_user_basket(user_id: int) -> List[Dict]:
 
     basket_with_details = []
     for item in basket_items:
-        # Fetch product details using the product_id
         product = Product.query.get(item.product_id)
         if product:
             basket_with_details.append({
@@ -174,6 +181,7 @@ def get_user_basket(user_id: int) -> List[Dict]:
                 "price": product.price,
                 "image_url": product.image_url,
             })
+    current_app.logger.info(f"Fetched basket details for user {user_id}.")
     return basket_with_details
 
 
@@ -192,8 +200,10 @@ def remove_from_basket_service(user_id: int, product_id: int) -> dict:
     if basket_item:
         db.session.delete(basket_item)
         db.session.commit()
+        current_app.logger.info(f"Removed product {product_id} from user {user_id}'s basket.")
         return {"message": "Product removed from basket"}
 
+    current_app.logger.warning(f"Product {product_id} not found in user {user_id}'s basket.")
     return {"error": "Product not found in basket"}
 
 
@@ -202,17 +212,19 @@ def add_product_to_purchased(user_id: int, product_ids: List[int]) -> dict:
     Adds a product to the user's set of purchased products.
     Args:
         user_id (str): The ID of the user.
-        product_id (str): The ID of the product to add.
+        product_ids (str): The ID of the product to add.
     Returns:
         dict: The raw result of the update operation.
     """
     user = User.query.get(user_id)
     if not user:
+        current_app.logger.error(f"User with ID {user_id} not found.")
         return {"error": "User not found"}
 
     user.purchased_products.extend(product_ids)
     user.purchased_products = list(set(user.purchased_products))
     db.session.commit()
+    current_app.logger.info(f"Added products {product_ids} to user {user_id}'s purchased products.")
     return {"message": "Products purchased successfully"}
 
 
@@ -226,5 +238,37 @@ def get_user_purchased_products(user_id: int) -> List[Dict]:
     """
     user = User.query.get(user_id)
     if user:
+        current_app.logger.info(f"Fetched purchased products for user {user_id}.")
         return user.purchased_products
+    current_app.logger.warning(f"No purchased products found for user {user_id}.")
     return []
+
+
+def clear_user_basket(user_id: int):
+    """
+    Clears the user's basket after a successful purchase.
+
+    Args:
+        user_id (int): The ID of the user.
+    """
+    current_app.logger.info(f"Attempting to clear basket for user {user_id}.")
+
+    basket_items = BasketItem.query.filter_by(user_id=user_id).all()
+
+    if not basket_items:
+        current_app.logger.info(f"No items found in the basket for user {user_id}.")
+        return {"message": "Basket is already empty"}
+
+    try:
+        for item in basket_items:
+            current_app.logger.info(f"Removing item {item.product_id} from basket for user {user_id}.")
+            db.session.delete(item)
+
+        db.session.commit()
+        current_app.logger.info(f"Successfully cleared basket for user {user_id}.")
+        return {"message": "Basket cleared successfully"}
+
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"Error clearing basket for user {user_id}: {e}")
+        return {"error": "Failed to clear basket"}
