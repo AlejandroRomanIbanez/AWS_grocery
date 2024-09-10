@@ -9,7 +9,6 @@ from flask_migrate import Migrate
 from dotenv import load_dotenv
 from datetime import timedelta
 
-
 load_dotenv()
 db = SQLAlchemy()
 
@@ -44,10 +43,12 @@ def create_app():
     from .routes.auth_routes import auth_bp
     from .routes.user_routes import user_bp
     from .routes.product_routes import product_bp
+    from .routes.health_routes import health_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(user_bp)
     app.register_blueprint(product_bp)
+    app.register_blueprint(health_bp)
 
     return app
 
@@ -62,17 +63,13 @@ def setup_logging(app):
 
     log_file = 'logs/app.log'
 
-
     file_handler = RotatingFileHandler(log_file, maxBytes=1024 * 1024, backupCount=5)
     file_handler.setLevel(logging.INFO)
-
 
     formatter = logging.Formatter(
         '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
     )
     file_handler.setFormatter(formatter)
 
-
     app.logger.addHandler(file_handler)
-
     app.logger.setLevel(logging.INFO)

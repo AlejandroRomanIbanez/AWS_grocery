@@ -145,7 +145,6 @@ def remove_from_basket():
 
 
 @jwt_required()
-@jwt_required()
 def purchase_product():
     """
     Handles the purchase of a product by adding it to the user's purchased products and clearing the basket.
