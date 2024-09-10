@@ -54,13 +54,9 @@ const ProductDetail = () => {
   }, [userPurchasedProducts, productDetailItem, productId]);
 
   const handleNewReview = (newReview) => {
-    const modifiedReview = {
-      ...newReview,
-      comment: ""
-  };
     setProductDetailItem((prevItem) => ({
       ...prevItem,
-      reviews: [...prevItem.reviews, modifiedReview],
+      reviews: [...prevItem.reviews, newReview],
     }));
     setCanLeaveReview(false);
     setHasReviewed(true);

@@ -8,7 +8,6 @@ export default function Checkout({ products, basket, setBasket }) {
   const [productQuantities, setProductQuantities] = useState({});
   const [address, setAddress] = useState({ street: '', city: '', postalCode: '' });
   const [payment, setPayment] = useState({ cardNumber: '', nameOnCard: '', expiration: '', cvv: '' });
-  const [freeShippingAchieved, setFreeShippingAchieved] = useState(false);
   const navigate = useNavigate();
   console.log("Basket data checkout", basket);
 
@@ -53,8 +52,6 @@ export default function Checkout({ products, basket, setBasket }) {
       } catch (error) {
         console.error('Failed to update basket:', error);
       }
-
-      checkForFreeShipping(newBasket);
     }
   };
 
@@ -76,8 +73,6 @@ export default function Checkout({ products, basket, setBasket }) {
     } catch (error) {
       console.error('Failed to remove from basket:', error);
     }
-
-    checkForFreeShipping(newBasket);
   };
 
   const getProductDetails = (productId) => {
@@ -141,31 +136,16 @@ export default function Checkout({ products, basket, setBasket }) {
     }, 0).toFixed(2);
   };
 
-  const calculateTotal = () => {
-    const productTotal = calculateProductTotal();
-    const shipmentCost = freeShippingAchieved || productTotal >= 20 ? 0 : 5;
-    return (parseFloat(productTotal) + shipmentCost).toFixed(2);
-  };
-
   const calculateShipmentCost = () => {
-    const productTotal = calculateProductTotal();
-    return freeShippingAchieved || productTotal >= 20 ? 0 : 5;
+    const productTotal = parseFloat(calculateProductTotal());
+    return productTotal >= 20 ? 0 : 5;
   };
 
-  const checkForFreeShipping = (currentBasket) => {
-    const productTotal = currentBasket.reduce((acc, item) => {
-      const product = getProductDetails(item.product_id);
-      return acc + product.price * item.quantity;
-    }, 0);
-
-    if (productTotal >= 20) {
-      setFreeShippingAchieved(true);
-    }
+  const calculateTotal = () => {
+    const productTotal = parseFloat(calculateProductTotal());
+    const shipmentCost = calculateShipmentCost();
+    return (productTotal + shipmentCost).toFixed(2);
   };
-
-  useEffect(() => {
-    checkForFreeShipping(basket);
-  }, [basket]);
 
   return (
     <section className="checkout-section">

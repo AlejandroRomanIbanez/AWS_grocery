@@ -11,7 +11,6 @@ const NewReview = ({ productId, reviews, onNewReview }) => {
   const maxCommentLength = 500;
 
   useEffect(() => {
-    // Fetch the current user's username from the backend
     const fetchUserInfo = async () => {
       try {
         const response = await fetch(`${process.env.REACT_APP_BACKEND_SERVER}/api/me/info`, {
@@ -24,7 +23,7 @@ const NewReview = ({ productId, reviews, onNewReview }) => {
         if (response.ok) {
           const data = await response.json();
           setUsername(data.username);
-          localStorage.setItem('username', data.username); // Store username in local storage
+          localStorage.setItem('username', data.username);
         } else {
           toast.error('Failed to fetch user info');
         }
@@ -67,7 +66,7 @@ const NewReview = ({ productId, reviews, onNewReview }) => {
         },
         body: JSON.stringify({
           rating: rating,
-          comment: "",  // This is the subtle bug; you might use "comment" instead to fix it.
+          comment: comment,
         }),
       });
   
