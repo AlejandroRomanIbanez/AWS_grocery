@@ -309,7 +309,8 @@ def allowed_file(filename):
 
 def save_avatar(user_id, file):
     """
-    Save the user's avatar in the images folder and update the user's avatar in the database.
+    Save the user's avatar in the images folder, update the user's avatar in the database,
+    and only after a successful upload, delete the old avatar if it exists and is not 'user_default.png'.
 
     Args:
         user_id (int): The ID of the user.
@@ -326,9 +327,9 @@ def save_avatar(user_id, file):
         current_app.logger.error(f"User with ID {user_id} not found.")
         return {"error": "User not found"}
 
-    # Secure the filename and save the file
     filename = secure_filename(f"user_{user_id}_{file.filename}")
     filepath = os.path.join(UPLOAD_FOLDER, filename)
+    old_avatar = user.avatar
 
     try:
         os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -339,6 +340,15 @@ def save_avatar(user_id, file):
         user.avatar = filename
         db.session.commit()
         current_app.logger.info(f"User {user_id}'s avatar updated to {filename}.")
+
+        if old_avatar and old_avatar != 'user_default.png':
+            old_avatar_path = os.path.join(UPLOAD_FOLDER, old_avatar)
+            if os.path.exists(old_avatar_path):
+                try:
+                    os.remove(old_avatar_path)
+                    current_app.logger.info(f"Deleted old avatar {old_avatar} for user {user_id}.")
+                except Exception as e:
+                    current_app.logger.error(f"Error deleting old avatar {old_avatar}: {e}")
 
         return {"message": "Avatar uploaded successfully", "avatar_url": filepath}
     except Exception as e:
