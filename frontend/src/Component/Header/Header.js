@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './Header.css';
 import AvatarModal from './AvatarModal';  // Import the AvatarModal component
 import logo from '../Assets/Frame2.png';
@@ -7,25 +7,33 @@ import { BiUser } from 'react-icons/bi';
 import { BsHeart, BsCart2 } from 'react-icons/bs';
 import Search from '../Search/Search';
 import { useNavigate } from 'react-router-dom';
-import useUserInfo from '../../hooks/useUserInfo'; // Import the custom hook
+import useUserInfo from '../../hooks/useUserInfo';
 
 const Header = ({ products }) => {
   const [showDropdown, setShowDropdown] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { avatarUrl, fetchUserInfo } = useUserInfo(); // Use the custom hook to get avatar URL and fetchUserInfo function
+  const { avatarUrl, fetchUserInfo, username } = useUserInfo();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    fetchUserInfo();
+  }, [fetchUserInfo]);
 
   const toggleDropdown = () => {
     setShowDropdown(!showDropdown);
   };
 
-  const openModal = () => {
-    setIsModalOpen(true);
+  const openAvatarModal = () => {
+    if (username) {
+      setIsModalOpen(true);
+    } else {
+      navigate('/auth');
+    }
   };
 
   const closeModal = () => {
     setIsModalOpen(false);
-    fetchUserInfo(); // Refetch user info to get the updated avatar when modal closes
+    fetchUserInfo();
   };
 
   return (
@@ -49,7 +57,7 @@ const Header = ({ products }) => {
                 <div className="dropdown-item" onClick={() => navigate('/auth')}>
                   Authentication
                 </div>
-                <div className="dropdown-item" onClick={openModal}>
+                <div className="dropdown-item" onClick={openAvatarModal}>
                   {/* Avatar image next to the Upload Avatar option */}
                   {avatarUrl && (
                     <img src={avatarUrl} alt="User Avatar" className="dropdown-avatar" />
@@ -68,7 +76,7 @@ const Header = ({ products }) => {
         </div>
       </div>
       {/* Avatar Modal */}
-      <AvatarModal isOpen={isModalOpen} onClose={closeModal} />
+      {isModalOpen && <AvatarModal isOpen={isModalOpen} onClose={closeModal} />}
     </div>
   );
 };
