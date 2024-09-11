@@ -1,7 +1,7 @@
 import logging
 from logging.handlers import RotatingFileHandler
 import os
-from flask import Flask
+from flask import Flask, send_from_directory, render_template
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager
@@ -31,7 +31,9 @@ def create_app():
     Returns:
         Flask: The configured Flask application.
     """
-    app = Flask(__name__)
+    app = Flask(__name__,
+                static_folder="../../frontend/build/static",
+                template_folder=os.path.join(os.path.dirname(__file__), "../../frontend/build"))
     CORS(app, resources={r"/*": {"origins": "*"}})
     app.config.from_object(Config)
 
@@ -49,6 +51,14 @@ def create_app():
     app.register_blueprint(user_bp)
     app.register_blueprint(product_bp)
     app.register_blueprint(health_bp)
+
+    @app.route("/", defaults={"path": ""})
+    @app.route("/<path:path>")
+    def serve_react_app(path):
+        if path != "" and os.path.exists(os.path.join(app.static_folder, path)):
+            return send_from_directory(app.static_folder, path)
+        else:
+            return render_template("index.html")
 
     return app
 
