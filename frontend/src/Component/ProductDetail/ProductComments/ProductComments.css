@@ -1,4 +1,22 @@
-/* ProductComments.css */
+.comment-author {
+  display: flex;
+  align-items: center;
+}
+
+.comment-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 10px;
+  border: 2px solid #66ccff;
+  padding: 3px;
+}
+
+.comment-username {
+  margin: 0;
+}
+
 
 .product-comments {
   padding: 2rem 0;
@@ -21,7 +39,7 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   padding: 1rem;
   flex: 1;
-  position: relative; /* Position relative for dropdown */
+  position: relative;
 }
 
 .comment-header {
@@ -38,7 +56,7 @@
 
 .dropdown-menu {
   position: absolute;
-  top: 2rem; /* Adjust according to the icon position */
+  top: 2rem;
   right: 1rem;
   background-color: #fff;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -59,15 +77,6 @@
 
 .dropdown-menu button:hover {
   background-color: #f0f0f0;
-}
-
-.comment-body h5 {
-  margin: 0 0 0.5rem 0;
-}
-
-.comment-body .small {
-  color: #aaa;
-  margin-bottom: 1rem;
 }
 
 .comment-footer {

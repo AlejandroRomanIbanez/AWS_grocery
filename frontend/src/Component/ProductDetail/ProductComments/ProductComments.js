@@ -1,52 +1,22 @@
 import React, { useState, useEffect, useRef } from 'react';
 import CustomRating from '../CustomRating/CustomRating';
 import './ProductComments.css';
+import useUserInfo from '../../../hooks/useUserInfo'; // Import the custom hook
 
 const ProductComments = ({ reviews, onDelete, onEdit }) => {
+  const { username, getAvatarUrl, fetchUserInfo } = useUserInfo(); // Add fetchUserInfo to refetch when necessary
+  const [reRenderKey, setReRenderKey] = useState(0); // State to trigger re-render
   const reversedReviews = [...reviews].reverse();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [currentDropdown, setCurrentDropdown] = useState(null); // Track which dropdown is open
+  const [currentDropdown, setCurrentDropdown] = useState(null);
   const [currentReview, setCurrentReview] = useState(null);
   const [updatedRating, setUpdatedRating] = useState(0);
   const [updatedComment, setUpdatedComment] = useState('');
-  const [username, setUsername] = useState('');
-  const dropdownRef = useRef(null); // Reference to the dropdown
+  const dropdownRef = useRef(null);
 
   useEffect(() => {
-    // Fetch the current user's username from the backend
-    const fetchUserInfo = async () => {
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_SERVER}/api/me/info`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setUsername(data.username);
-      } else {
-        console.error('Failed to fetch user info');
-      }
-    };
-
-    fetchUserInfo();
-  }, []);
-
-  useEffect(() => {
-    // Close the dropdown if clicked outside
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setCurrentDropdown(null);
-      }
-    };
-    
-    document.addEventListener('mousedown', handleClickOutside);
-    
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [dropdownRef]);
+    fetchUserInfo(); // Re-fetch user info when the component mounts
+  }, [reRenderKey, fetchUserInfo]); // Add reRenderKey to force update when avatar changes
 
   const toggleDropdown = (index) => {
     setCurrentDropdown(currentDropdown === index ? null : index);
@@ -55,7 +25,7 @@ const ProductComments = ({ reviews, onDelete, onEdit }) => {
   const handleDelete = (authorName) => {
     if (window.confirm('Are you sure you want to delete this review?')) {
       onDelete(authorName);
-      setCurrentDropdown(null); // Close the dropdown after action
+      setCurrentDropdown(null);
     }
   };
 
@@ -64,12 +34,14 @@ const ProductComments = ({ reviews, onDelete, onEdit }) => {
     setUpdatedRating(parseInt(review.rating));
     setUpdatedComment(review.comment);
     setIsModalOpen(true);
-    setCurrentDropdown(null); // Close the dropdown after action
+    setCurrentDropdown(null);
   };
 
   const handleModalClose = () => {
     setIsModalOpen(false);
     setCurrentReview(null);
+    fetchUserInfo(); // Re-fetch user info when modal closes
+    setReRenderKey((prev) => prev + 1); // Trigger a re-render
   };
 
   const handleSubmit = () => {
@@ -80,40 +52,43 @@ const ProductComments = ({ reviews, onDelete, onEdit }) => {
   return (
     <section className="product-comments">
       <div className="comments-container">
-        {reversedReviews.length > 0 ? (
-          reversedReviews.map((review, index) => (
-            <div className="comment" key={index}>
-              <div className="comment-body">
-                <div className="comment-header">
-                  <h5><strong>{review.author}</strong></h5>
-                  {review.author === username && (
-                    <div className="menu-icon" onClick={() => toggleDropdown(index)}>...</div>
-                  )}
-                  {currentDropdown === index && (
-                    <div className="dropdown-menu" ref={dropdownRef}>
-                      <button onClick={() => handleEdit(review)}>Edit</button>
-                      <button onClick={() => handleDelete(review.author)}>Delete</button>
-                    </div>
-                  )}
+        {reversedReviews.map((review, index) => (
+          <div className="comment" key={`${index}-${reRenderKey}`}> {/* Key includes reRenderKey to force re-render */}
+            <div className="comment-body">
+              <div className="comment-header">
+                {/* Display avatar and username */}
+                <div className="comment-author">
+                  <img
+                    src={getAvatarUrl(review.author)} // Use helper to get avatar
+                    alt="User Avatar"
+                    className="comment-avatar"
+                  />
+                  <h5 className="comment-username"><strong>{review.author}</strong></h5>
                 </div>
-                <p>{review.comment}</p>
-                <div className="comment-footer">
-                  <div className="comment-actions">
-                    <div className="rating">
-                      <CustomRating rating={review.rating} />
-                      <span className="small">({parseInt(review.rating.toFixed(1))})</span>
-                    </div>
+                {review.author === username && (
+                  <div className="menu-icon" onClick={() => toggleDropdown(index)}>...</div>
+                )}
+                {currentDropdown === index && (
+                  <div className="dropdown-menu" ref={dropdownRef}>
+                    <button onClick={() => handleEdit(review)}>Edit</button>
+                    <button onClick={() => handleDelete(review.author)}>Delete</button>
+                  </div>
+                )}
+              </div>
+              <p>{review.comment}</p>
+              <div className="comment-footer">
+                <div className="comment-actions">
+                  <div className="rating">
+                    <CustomRating rating={review.rating} />
+                    <span className="small">({parseInt(review.rating.toFixed(1))})</span>
                   </div>
                 </div>
               </div>
             </div>
-          ))
-        ) : (
-          <p>No reviews available.</p>
-        )}
+          </div>
+        ))}
       </div>
 
-      {/* Edit Review Modal */}
       {isModalOpen && (
         <div className="modal-overlay">
           <div className="modal">

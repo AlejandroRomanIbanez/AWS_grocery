@@ -12,6 +12,27 @@ UPLOAD_FOLDER = os.path.join(os.getcwd(), 'avatar')
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
 
+def get_all_users() -> list:
+    """
+    Retrieves all users from the database.
+
+    Returns:
+        list: A list of dictionaries containing each user's information.
+    """
+    users = User.query.all()
+    user_list = []
+
+    for user in users:
+        user_list.append({
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
+            "avatar": user.avatar if user.avatar else 'user_default.png',
+        })
+
+    current_app.logger.info(f"Retrieved {len(users)} users.")
+    return user_list
+
 def get_user_info(user_id: int) -> dict:
     """
     Retrieves the user's information from the database.
@@ -30,7 +51,8 @@ def get_user_info(user_id: int) -> dict:
             "email": user.email,
             "fav_products": user.fav_products,
             "basket": [item.to_dict() for item in user.basket_items],
-            "purchased_products": user.purchased_products
+            "purchased_products": user.purchased_products,
+            "avatar": user.avatar
         }
     current_app.logger.warning(f"User with ID {user_id} not found.")
     return {}

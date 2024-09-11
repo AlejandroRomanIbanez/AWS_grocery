@@ -127,3 +127,21 @@
 .new-review-form-control.error {
     border-color: red;
 }
+
+.new-review-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.new-review-avatar {
+    margin-right: 15px;
+}
+
+.new-review-avatar-img {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #A6C8EB;
+}

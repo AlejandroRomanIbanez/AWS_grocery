@@ -2,7 +2,20 @@ from flask import jsonify, request, current_app, send_from_directory
 from flask_jwt_extended import get_jwt_identity, jwt_required
 from ..services.user_service import add_to_favorites, get_user_favorites, remove_from_favorites, sync_basket_service, \
     get_user_basket, remove_from_basket_service, add_product_to_purchased, get_user_purchased_products, get_user_info, \
-    clear_user_basket, save_avatar, UPLOAD_FOLDER
+    clear_user_basket, save_avatar, UPLOAD_FOLDER, get_all_users
+
+
+@jwt_required()
+def get_all_users_info():
+    """
+    Retrieves information of all users.
+
+    Returns:
+        JSON: A JSON response containing the list of all users and their information.
+    """
+    current_app.logger.info("Fetching information for all users.")
+    users_info = get_all_users()
+    return jsonify(users_info), 200
 
 @jwt_required()
 def get_current_user_info():
@@ -211,8 +224,12 @@ def upload_avatar():
     else:
         return jsonify(result), 200
 
+
 def serve_avatar(filename):
     """
     Serve the avatar image from the avatar folder.
     """
-    return send_from_directory(UPLOAD_FOLDER, filename)
+    try:
+        return send_from_directory(UPLOAD_FOLDER, filename)
+    except FileNotFoundError:
+        return send_from_directory(UPLOAD_FOLDER, 'user_default.png')
