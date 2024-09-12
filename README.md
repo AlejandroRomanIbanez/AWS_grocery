@@ -42,9 +42,14 @@ Installation
 Follow these steps to set up the application locally.
 Create .env files in the backend and frontend, and follow the .env.examples to know what is required
 
-Backend
+## Backend
 
 Clone the Repository:
+
+    bash
+    git clone https://github.com/AlejandroRomanIbanez/AWS_grocery.git
+
+Go to the backend:
 
     bash
     cd backend
@@ -62,13 +67,24 @@ Install Requirements:
     
     pip install -r requirements.txt
 
-Run the Application:
+
+## Database Setup
+To get the PostgreSQL database used in GroceryMate up and running on your local machine:
+
+- Ensure PostgreSQL is installed and running on your system.
+
+- Use the provided PostgreSQL dump file to restore the database:
+
+  - Place the db_backup.dump file in the root directory of the project.
+  - Run the following command to restore the database
+  - Make sure you are still in the backend folder
 
     bash
     
-    python run.py
+        pg_restore -U <your_postgresql_username> -d grocerymate_db -v db_backup/db_backup.dump
 
-Frontend
+
+## Frontend
 
 Navigate to the Frontend Directory:
 
@@ -81,12 +97,14 @@ Install Dependencies:
     bash
     
     npm install
+    npm run build
 
 Start the Application:
 
     bash
     
-        npm start
+        cd ../backend
+        python run.py
 
 Usage
 
