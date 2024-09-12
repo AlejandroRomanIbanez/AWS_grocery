@@ -67,6 +67,34 @@ Install Requirements:
     
     pip install -r requirements.txt
 
+Create an `.env` file for backend:
+
+- On Windows:
+
+  - Open Notepad to create the `.env` file:
+
+        bash
+        notepad .env
+
+- On Linux/macOS:
+
+  - Use nano to create the `.env` file:
+
+        bash
+        nano .env
+
+Generate JWT Secret Key and fill the .env file like in the .env.example:
+- To generate a secure `JWT_SECRET_KEY`, run the following command:
+
+      bash
+      python -c "import secrets; print(secrets.token_hex(32))"
+
+- Fill the `POSTGRES_URI` with your local server:
+      
+      Example
+      postgresql://postgres:postgres@localhost:5432/grocerydb
+          
+
 
 ## Database Setup
 To get the PostgreSQL database used in GroceryMate up and running on your local machine:
@@ -98,6 +126,28 @@ Install Dependencies:
     
     npm install
     npm run build
+
+Create the `.env` File for the Frontend:
+
+- Create a `.env` file in the frontend directory:
+- On Windows:
+
+  - Open Notepad to create the `.env` file:
+
+        bash
+        notepad .env
+
+- On Linux/macOS:
+
+  - Use nano to create the `.env` file:
+
+        bash
+        nano .env
+
+- Example content for the .env file:
+  
+      bash
+      REACT_APP_API_URL=http://localhost:5000
 
 Start the Application:
 
