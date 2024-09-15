@@ -46,125 +46,105 @@ Create .env files in the backend and frontend, and follow the .env.examples to k
 
 Clone the Repository:
 
-    bash
-    git clone https://github.com/AlejandroRomanIbanez/AWS_grocery.git
+    git clone --branch version1 https://github.com/AlejandroRomanIbanez/AWS_grocery.git
+    cd AWS_grocery
 
 Go to the backend:
 
-    bash
     cd backend
 
 Create and Activate a Virtual Environment:
 
-    bash
 
     python -m venv venv
     source venv/bin/activate  # On Windows use `venv\Scripts\activate`
 
 Install Requirements:
 
-    bash
-    
     pip install -r requirements.txt
 
-Create an `.env` file for backend:
+Create an `.env` file for the backend:
 
 - On Windows:
 
-  - Open Notepad to create the `.env` file:
+  - Use ni to create the `.env` file and notepad to fill the .env:
 
-        bash
+        ni .env -Force
         notepad .env
 
 - On Linux/macOS:
 
   - Use nano to create the `.env` file:
 
-        bash
         nano .env
 
-Generate JWT Secret Key and fill the .env file like in the .env.example:
+Generate the JWT Secret Key and fill the .env file like in the .env.example:
 - To generate a secure `JWT_SECRET_KEY`, run the following command:
 
-      bash
       python -c "import secrets; print(secrets.token_hex(32))"
 
-- Fill the `POSTGRES_URI` with your local server:
+      Example:
+        JWT_SECRET_KEY=094bb15924a8a63d82f612b978e8bc758d5c3f0330a41beefb36f45b587411d4
+- This key will be used to secure user sessions, don't use the key for the example
+
+- Fill the `FLASK_ENV` with development to work in a local environment:
       
-      Example
-      postgresql://postgres:postgres@localhost:5432/grocerydb
-          
-
-
-## Database Setup
-To get the PostgreSQL database used in GroceryMate up and running on your local machine:
-
-- Ensure PostgreSQL is installed and running on your system.
-
-- Use the provided PostgreSQL dump file to restore the database:
-
-  - Place the db_backup.dump file in the root directory of the project.
-  - Run the following command to restore the database
-  - Make sure you are still in the backend folder
-
-    bash
-    
-        pg_restore -U <your_postgresql_username> -d grocerymate_db -v db_backup/db_backup.dump
+      FLASK_ENV=development
 
 
 ## Frontend
 
 Navigate to the Frontend Directory:
 
-    bash
-
     cd ../frontend
-
-Install Dependencies:
-
-    bash
-    
-    npm install
-    npm run build
 
 Create the `.env` File for the Frontend:
 
 - Create a `.env` file in the frontend directory:
 - On Windows:
+  - Use ni to create the `.env` file and notepad to fill the .env:
 
-  - Open Notepad to create the `.env` file:
-
-        bash
+        ni .env -Force
         notepad .env
 
 - On Linux/macOS:
 
   - Use nano to create the `.env` file:
 
-        bash
         nano .env
 
 - Example content for the .env file:
   
-      bash
       REACT_APP_API_URL=http://localhost:5000
 
-Start the Application:
+Install Dependencies and generate the build:
+    
+    npm install
+    npm run build
 
-    bash
+
+Start the Application:
     
         cd ../backend
         python run.py
 
+Navigate and get familiar with the app
+
 Usage
 
     Register or Login:
-        Open the application in your browser.
-        Register a new account or login with your existing credentials.
+        Open the application in your browser ---> http://localhost:5000
+        Register a new account or log in with your existing credentials.
+
+    Upload avatars:
+        Upload an image and use it as the avatar of the user
 
     Search for Products:
         Use the search bar to find products.
-        Sort products by price or filter by categories.
+        Sort products by price or filter by categories in store.
+
+    Products:
+        Add, edit, or delete reviews of products you buyed
 
     Add to Favorites and Basket:
         Add products to your favorites list for quick access.
