@@ -5,6 +5,7 @@ from flask import Flask, send_from_directory, render_template
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager
+from sqlalchemy import text
 from flask_migrate import Migrate
 from dotenv import load_dotenv
 from datetime import timedelta
@@ -14,8 +15,14 @@ db = SQLAlchemy()
 
 class Config:
     """App configuration variables."""
-    POSTGRES_URI = os.getenv("POSTGRES_URI")
-    SQLALCHEMY_DATABASE_URI = POSTGRES_URI
+    if os.getenv("FLASK_ENV") == "development":
+        SQLALCHEMY_DATABASE_URI = "sqlite:///" + os.path.join(os.path.abspath(os.path.dirname(__file__)), "local.db")
+
+    else:
+        POSTGRES_URI = os.getenv("POSTGRES_URI")
+        SQLALCHEMY_DATABASE_URI = POSTGRES_URI
+    print(SQLALCHEMY_DATABASE_URI)
+
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=4)
@@ -38,6 +45,11 @@ def create_app():
     app.config.from_object(Config)
 
     db.init_app(app)
+
+    with app.app_context():
+        if app.config['SQLALCHEMY_DATABASE_URI'].startswith('sqlite'):
+            db.session.execute(text('PRAGMA foreign_keys=ON'))
+
     JWTManager(app)
     Migrate(app, db)
     setup_logging(app)

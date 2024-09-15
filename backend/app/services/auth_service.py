@@ -1,6 +1,5 @@
 from flask import current_app
 from werkzeug.security import generate_password_hash, check_password_hash
-from ..helpers import serialize_object_id
 from ..models.user_model import User
 from .. import db
 

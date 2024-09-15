@@ -64,8 +64,11 @@ def add_to_favorites(user_id: int, product_id: int) -> dict:
         current_app.logger.error(f"User with ID {user_id} not found.")
         return {"error": "User not found"}
 
-    if product_id not in user.fav_products:
-        user.fav_products = cast(user.fav_products + [product_id], ARRAY(Integer))
+    fav_products = [int(p) for p in user.fav_products.split(',')] if user.fav_products else []
+
+    if product_id not in fav_products:
+        fav_products.append(product_id)
+        user.fav_products = ','.join(map(str, fav_products))
         current_app.logger.info(f"Adding product {product_id} to user {user_id}'s favorites.")
 
         try:
@@ -97,8 +100,11 @@ def remove_from_favorites(user_id: int, product_id: int) -> dict:
         current_app.logger.error(f"User with ID {user_id} not found.")
         return {"error": "User not found"}
 
-    if product_id in user.fav_products:
-        user.fav_products = cast([p for p in user.fav_products if p != product_id], ARRAY(Integer))
+    fav_products = [int(p) for p in user.fav_products.split(',')] if user.fav_products else []
+
+    if product_id in fav_products:
+        fav_products.remove(product_id)
+        user.fav_products = ','.join(map(str, fav_products))
         current_app.logger.info(f"Removing product {product_id} from user {user_id}'s favorites.")
 
         try:
@@ -126,7 +132,8 @@ def get_user_favorites(user_id: int) -> list:
     """
     user = User.query.get(user_id)
     if user:
-        favorite_products = Product.query.filter(Product.id.in_(user.fav_products)).all()
+        fav_products = [int(p) for p in user.fav_products.split(',')] if user.fav_products else []
+        favorite_products = Product.query.filter(Product.id.in_(fav_products)).all()
         current_app.logger.info(f"Fetched {len(favorite_products)} favorite products for user {user_id}.")
         return [product.to_dict() for product in favorite_products]
     current_app.logger.warning(f"No favorites found for user {user_id}.")
@@ -247,8 +254,11 @@ def add_product_to_purchased(user_id: int, product_ids: List[int]) -> dict:
         current_app.logger.error(f"User with ID {user_id} not found.")
         return {"error": "User not found"}
 
-    user.purchased_products.extend(product_ids)
-    user.purchased_products = list(set(user.purchased_products))
+    purchased_products = [int(p) for p in user.purchased_products.split(',')] if user.purchased_products else []
+    purchased_products.extend(product_ids)
+    purchased_products = list(set(purchased_products))
+
+    user.purchased_products = ','.join(map(str, purchased_products))
     db.session.commit()
     current_app.logger.info(f"Added products {product_ids} to user {user_id}'s purchased products.")
     return {"message": "Products purchased successfully"}
@@ -264,8 +274,9 @@ def get_user_purchased_products(user_id: int) -> List[Dict]:
     """
     user = User.query.get(user_id)
     if user:
+        purchased_products = [int(p) for p in user.purchased_products.split(',')] if user.purchased_products else []
         current_app.logger.info(f"Fetched purchased products for user {user_id}.")
-        return user.purchased_products
+        return purchased_products
     current_app.logger.warning(f"No purchased products found for user {user_id}.")
     return []
 
