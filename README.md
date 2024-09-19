@@ -1,3 +1,10 @@
+## Requirements
+To make this app work make sure you have this installed on your computer:
+- Python
+- PostgreSQL
+- Node.js and npm
+- Git
+
 GroceryMate
 
 
@@ -115,7 +122,7 @@ Create the `.env` File for the Frontend:
 
 - Example content for the .env file:
   
-      REACT_APP_API_URL=http://localhost:5000
+      REACT_APP_BACKEND_SERVER=http://localhost:5000
 
 Install Dependencies and generate the build:
     
