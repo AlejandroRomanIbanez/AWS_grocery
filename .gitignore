@@ -1,0 +1,6 @@
+# Ignore the entire infrastructure folder
+infrastructure/
+
+# Ignore help folder
+help/
+
