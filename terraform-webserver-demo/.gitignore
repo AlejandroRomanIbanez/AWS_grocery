@@ -1,0 +1,32 @@
+# Ignore local Terraform directories
+.terraform/
+
+# Ignore Terraform state files (critical infrastructure data)
+*.tfstate
+*.tfstate.*
+
+# Ignore crash logs
+crash.log
+crash.*.log
+
+# Ignore tfvars files (may contain sensitive secrets)
+*.tfvars
+*.tfvars.json
+
+# Ignore override files (not meant for version control)
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Ignore Terraform lock file (prevents parallel deployments)
+.terraform.tfstate.lock.info
+
+# Ignore Terraform plan files
+*tfplan*
+
+# Ignore Terraform CLI configuration files
+.terraformrc
+terraform.rc
+
+terraform.tfvars
