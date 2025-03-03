@@ -7,6 +7,7 @@ import notfound from '../../Assets/no-product-found.png';
 import ProductGridSkeleton from '../../Skeleton/ProductGridSkeleton';
 import { toast, Toaster } from 'react-hot-toast';
 import AgeVerificationModal from '../../AgeVerification/AgeVerificationModal'; // Import the modal component
+import { API_BASE_URL } from '../../../config';
 
 const ProductGrid = ({ products, isFav, basket, setBasket, filterByCategory, resetPage }) => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -28,7 +29,7 @@ const ProductGrid = ({ products, isFav, basket, setBasket, filterByCategory, res
         try {
           const token = localStorage.getItem('token');
           if (!token) return;
-          const response = await axios.get(`${process.env.REACT_APP_BACKEND_SERVER}/api/me/favorites`, {
+          const response = await axios.get(`${API_BASE_URL}/api/me/favorites`, {
             headers: {
               Authorization: `Bearer ${token}`
             }
@@ -45,7 +46,7 @@ const ProductGrid = ({ products, isFav, basket, setBasket, filterByCategory, res
       try {
         const token = localStorage.getItem('token');
         if (!token) return;
-        const response = await axios.get(`${process.env.REACT_APP_BACKEND_SERVER}/api/me/basket`, {
+        const response = await axios.get(`${API_BASE_URL}/api/me/basket`, {
           headers: {
             Authorization: `Bearer ${token}`
           }
@@ -83,7 +84,7 @@ const ProductGrid = ({ products, isFav, basket, setBasket, filterByCategory, res
     if (favProductIds.includes(productId)) {
       try {
         const response = await axios.post(
-          `${process.env.REACT_APP_BACKEND_SERVER}/api/me/favorites/remove`,
+          `${API_BASE_URL}/api/me/favorites/remove`,
           { product_id: productId },
           {
             headers: {
@@ -103,7 +104,7 @@ const ProductGrid = ({ products, isFav, basket, setBasket, filterByCategory, res
       // Add to favorites
       try {
         const response = await axios.post(
-          `${process.env.REACT_APP_BACKEND_SERVER}/api/me/favorites`,
+          `${API_BASE_URL}/api/me/favorites`,
           { product_id: productId },
           {
             headers: {
@@ -148,7 +149,7 @@ const ProductGrid = ({ products, isFav, basket, setBasket, filterByCategory, res
 
     try {
       await axios.post(
-        `${process.env.REACT_APP_BACKEND_SERVER}/api/me/basket`,
+        `${API_BASE_URL}/api/me/basket`,
         newBasket,
         {
           headers: {

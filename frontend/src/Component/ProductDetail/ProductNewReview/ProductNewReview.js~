@@ -3,7 +3,6 @@ import './ProductNewReview.css';
 import InteractiveRating from '../CustomRating/InteractiveRating';
 import { toast, Toaster } from 'react-hot-toast';
 import useUserInfo from '../../../hooks/useUserInfo';
-import { API_BASE_URL } from '../../../config';
 
 const NewReview = ({ productId, reviews, onNewReview }) => {
   const { username, avatarUrl } = useUserInfo();
@@ -33,7 +32,7 @@ const NewReview = ({ productId, reviews, onNewReview }) => {
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/products/${productId}/add-review`, {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_SERVER}/api/products/${productId}/add-review`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

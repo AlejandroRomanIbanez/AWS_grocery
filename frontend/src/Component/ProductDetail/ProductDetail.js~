@@ -91,7 +91,7 @@ const ProductDetail = () => {
 
   const handleEditReview = async (authorName, newRating, newComment) => {
     try {
-      await axios.put(`${API_BASE_URL}/api/products/${productId}/update-review`, {
+      await axios.put(`${process.env.REACT_APP_BACKEND_SERVER}/api/products/${productId}/update-review`, {
         author_name: authorName,
         rating: newRating,
         comment: newComment

@@ -1,7 +1,11 @@
 import logging
+import shutil
+import tempfile
+import zipfile
 from logging.handlers import RotatingFileHandler
 import os
-from flask import Flask, send_from_directory, render_template
+import socket
+from flask import Flask, send_from_directory, render_template, request
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from flask_jwt_extended import JWTManager
@@ -9,35 +13,214 @@ from sqlalchemy import text
 from flask_migrate import Migrate
 from dotenv import load_dotenv
 from datetime import timedelta
+import requests
+from dateutil import parser
 
 load_dotenv()
 db = SQLAlchemy()
 
+DEPLOYMENT_ENV = os.getenv("DEPLOYMENT_ENV", "local")
+GITHUB_USERNAME = "AlejandroRomanIbanez"
+REPO_NAME = "AWS_grocery"
+FRONTEND_BUILD_ZIP = "frontend-build.zip"
+FRONTEND_BUILD_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../frontend/build"))
+TMP_ZIP_PATH = os.path.join(tempfile.gettempdir(), "frontend-build.zip")
+GITHUB_RELEASE_URL = f"https://github.com/{GITHUB_USERNAME}/{REPO_NAME}/releases/latest/download/{FRONTEND_BUILD_ZIP}"
+
+
 class Config:
     """App configuration variables."""
-    if os.getenv("FLASK_ENV") == "development":
-        SQLALCHEMY_DATABASE_URI = "sqlite:///" + os.path.join(os.path.abspath(os.path.dirname(__file__)), "local.db")
+    POSTGRES_USER = os.getenv("POSTGRES_USER", "postgres")
+    POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD", "postgres")
+    POSTGRES_DB = os.getenv("POSTGRES_DB", "postgres")
+    POSTGRES_HOST = os.getenv("POSTGRES_HOST", "postgres")
+    POSTGRES_PORT = os.getenv("POSTGRES_PORT", "5432")
 
-    else:
-        POSTGRES_URI = os.getenv("POSTGRES_URI")
-        SQLALCHEMY_DATABASE_URI = POSTGRES_URI
-    print(SQLALCHEMY_DATABASE_URI)
+    POSTGRES_URI = os.getenv("POSTGRES_URI", "postgresql://postgres:postgres@localhost:5432/postgres")
+
+    if not POSTGRES_URI:
+        raise ValueError("POSTGRES_URI environment variable is not set.")
+
+    @classmethod
+    def is_rds(cls):
+        """Check if using AWS RDS by detecting an external hostname."""
+        rds_hostnames = ["rds.amazonaws.com", "amazonaws.com"]
+        return any(h in cls.POSTGRES_URI for h in rds_hostnames)
+
+    @classmethod
+    def is_local_postgres(cls):
+        """Check if 'postgres' resolves to a local Docker container."""
+        return not cls.is_rds()
+
+    SQLALCHEMY_DATABASE_URI = POSTGRES_URI
+    print(f"Using Database: {SQLALCHEMY_DATABASE_URI}")
 
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=4)
 
 
+def detect_environment():
+    if Config.is_rds():
+        print("Running on AWS RDS (Production)")
+    elif Config.is_local_postgres():
+        print("Running in Local Docker PostgreSQL")
+    else:
+        print("Could not detect database environment. Set POSTGRES_URI manually.")
+    print(f"Using Database: {Config.SQLALCHEMY_DATABASE_URI}")
+
+detect_environment()
+
+
+def get_public_ip():
+    """Try multiple methods to get the public IP"""
+    # Method 1: AWS Instance Metadata
+    try:
+        response = requests.get('http://169.254.169.254/latest/meta-data/public-ipv4', timeout=1)
+        if response.status_code == 200:
+            return response.text.strip()
+    except requests.exceptions.RequestException:
+        pass
+
+    # Method 2: Public IP API services
+    ip_apis = [
+        'http://ipinfo.io/ip',
+        'https://api.ipify.org',
+        'http://ip-api.com/line/?fields=query'
+    ]
+
+    for api in ip_apis:
+        try:
+            response = requests.get(api, timeout=2)
+            if response.status_code == 200:
+                return response.text.strip()
+        except requests.exceptions.RequestException:
+            continue
+
+    return None
+
+
+def fetch_frontend():
+    """
+    Fetches the latest frontend build from GitHub Releases and ensures it's placed in frontend/build.
+    """
+    if os.path.exists(FRONTEND_BUILD_PATH):
+        print("Frontend build is already present. Checking for updates...")
+        latest_release_timestamp = get_github_release_timestamp()
+        local_build_timestamp = get_local_build_timestamp()
+
+        if latest_release_timestamp and local_build_timestamp:
+            if local_build_timestamp >= latest_release_timestamp:
+                print("Frontend build is up to date.")
+                return
+            print("Frontend build is outdated. Fetching the latest version...")
+    else:
+        print("Frontend build not found. Fetching the latest version...")
+
+    try:
+        response = requests.get(GITHUB_RELEASE_URL, stream=True)
+        if response.status_code == 200:
+            # Save the zip file
+            with open(TMP_ZIP_PATH, "wb") as f:
+                f.write(response.content)
+
+            # Ensure frontend directory exists
+            frontend_dir = os.path.dirname(FRONTEND_BUILD_PATH)
+            os.makedirs(frontend_dir, exist_ok=True)
+
+            # Create temporary extraction directory
+            temp_extract_path = os.path.join(frontend_dir, "temp_extract")
+            shutil.rmtree(temp_extract_path, ignore_errors=True)
+            os.makedirs(temp_extract_path)
+
+            # First, extract to temp directory
+            with zipfile.ZipFile(TMP_ZIP_PATH, 'r') as zip_ref:
+                zip_ref.extractall(temp_extract_path)
+
+            # Clear existing build directory if it exists
+            if os.path.exists(FRONTEND_BUILD_PATH):
+                shutil.rmtree(FRONTEND_BUILD_PATH)
+
+            # Create fresh build directory
+            os.makedirs(FRONTEND_BUILD_PATH)
+
+            # Determine source of files
+            if os.path.exists(os.path.join(temp_extract_path, "build", "index.html")):
+                # Files are in a build subdirectory
+                source_dir = os.path.join(temp_extract_path, "build")
+                print("Found build directory in zip, using its contents")
+            elif os.path.exists(os.path.join(temp_extract_path, "index.html")):
+                # Files are at root
+                source_dir = temp_extract_path
+                print("Found files at root of zip, moving them to build directory")
+            else:
+                raise Exception("Could not find index.html in the extracted content")
+
+            # Copy everything to build directory
+            for item in os.listdir(source_dir):
+                source = os.path.join(source_dir, item)
+                dest = os.path.join(FRONTEND_BUILD_PATH, item)
+                if os.path.isdir(source):
+                    shutil.copytree(source, dest)
+                else:
+                    shutil.copy2(source, dest)
+
+            print("Frontend files successfully moved to build directory")
+
+            # Verify the build directory has expected files
+            if not os.path.exists(os.path.join(FRONTEND_BUILD_PATH, "index.html")):
+                raise Exception("Failed to find index.html in final build directory")
+
+            # Clean up
+            shutil.rmtree(temp_extract_path, ignore_errors=True)
+            os.remove(TMP_ZIP_PATH)
+
+            print("Frontend build downloaded and extracted successfully")
+        else:
+            print(f"Failed to download frontend build. Status Code: {response.status_code}")
+    except Exception as e:
+        print(f"Error fetching frontend: {e}")
+        # Clean up on error
+        if 'temp_extract_path' in locals():
+            shutil.rmtree(temp_extract_path, ignore_errors=True)
+        if os.path.exists(TMP_ZIP_PATH):
+            os.remove(TMP_ZIP_PATH)
+        # Keep existing build if update fails
+        raise
+
+
+def get_github_release_timestamp():
+    """
+    Fetches the timestamp of the latest frontend release from GitHub.
+    """
+    release_api_url = f"https://api.github.com/repos/{GITHUB_USERNAME}/{REPO_NAME}/releases/latest"
+    try:
+        response = requests.get(release_api_url)
+        if response.status_code == 200:
+            timestamp_iso = response.json().get("published_at")
+            if timestamp_iso:
+                return int(parser.parse(timestamp_iso).timestamp())
+    except Exception as e:
+        print(f"Error fetching GitHub release timestamp: {e}")
+    return None
+
+
+def get_local_build_timestamp():
+    """
+    Retrieves the timestamp of the local frontend build.
+    """
+    try:
+        return os.path.getmtime(FRONTEND_BUILD_PATH)
+    except Exception:
+        return None
+
+
 def create_app():
     """
-    Creates and configures the Flask application.
-
-    This function initializes the Flask app with necessary configurations, including
-    enabling CORS, setting up JWT authentication, and registering blueprints for routes.
-
-    Returns:
-        Flask: The configured Flask application.
+    Creates and configures the Flask app.
     """
+    fetch_frontend()
+
     app = Flask(__name__,
                 static_folder="../../frontend/build/static",
                 template_folder=os.path.join(os.path.dirname(__file__), "../../frontend/build"))
@@ -58,11 +241,45 @@ def create_app():
     from .routes.user_routes import user_bp
     from .routes.product_routes import product_bp
     from .routes.health_routes import health_bp
+    from .routes.config_routes import config_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(user_bp)
     app.register_blueprint(product_bp)
     app.register_blueprint(health_bp)
+    app.register_blueprint(config_bp)
+
+    def inject_backend_url():
+        """Get the backend URL based on the current request"""
+        if DEPLOYMENT_ENV == "public_ip":
+            public_ip = get_public_ip()
+            if public_ip:
+                print(f"Using public IP: {public_ip}")
+                return f"http://{public_ip}:5000"
+
+            # Fallback: Try to get from request host
+            if request.host:
+                host = request.host.split(':')[0]
+                print(f"Falling back to request host: {host}")
+                return f"http://{host}:5000"
+
+            # Final fallback: Use the raw request URL
+            print(f"Using request URL: {request.url_root}")
+            return request.url_root.rstrip('/')
+
+        elif DEPLOYMENT_ENV == "load_balancer":
+            # Running behind a Load Balancer
+            if request.headers.get('X-Forwarded-Proto'):
+                proto = request.headers.get('X-Forwarded-Proto')
+                host = request.headers.get('X-Forwarded-Host', request.host)
+            else:
+                proto = request.scheme
+                host = request.host
+            return f"{proto}://{host}"
+
+        else:
+            # Default: Local development
+            return f"{request.scheme}://{request.host}"
 
     @app.route("/", defaults={"path": ""})
     @app.route("/<path:path>")
@@ -70,7 +287,11 @@ def create_app():
         if path != "" and os.path.exists(os.path.join(app.static_folder, path)):
             return send_from_directory(app.static_folder, path)
         else:
-            return render_template("index.html")
+            backend_url = inject_backend_url()
+            return render_template(
+                "index.html",
+                backend_url=backend_url
+            )
 
     return app
 

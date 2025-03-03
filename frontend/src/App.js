@@ -13,6 +13,7 @@ import Checkout from './Component/Checkout/Checkout';
 import axios from 'axios';
 import ProtectedRoute from './Component/ProtectedRoute';
 import ProductDetail from './Component/ProductDetail/ProductDetail';
+import { API_BASE_URL } from './config';
 
 
 
@@ -62,7 +63,7 @@ function App() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get(`${process.env.REACT_APP_BACKEND_SERVER}/api/products/all_products`);
+        const response = await axios.get(`${API_BASE_URL}/api/products/all_products`);
         setProducts(response.data);
       } catch (error) {
         console.error(error);
@@ -72,7 +73,7 @@ function App() {
     const fetchBasket = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get(`${process.env.REACT_APP_BACKEND_SERVER}/api/me/basket`, {
+        const response = await axios.get(`${API_BASE_URL}/api/me/basket`, {
           headers: {
             Authorization: `Bearer ${token}`
           }

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import "./Checkout.css";
 import axios from 'axios';
 import emptyCart from '../Assets/emptycart.png';
+import {API_BASE_URL} from '../../config';
 
 export default function Checkout({ products, basket, setBasket }) {
   const [productQuantities, setProductQuantities] = useState({});
@@ -41,7 +42,7 @@ export default function Checkout({ products, basket, setBasket }) {
       try {
         const token = localStorage.getItem('token');
         await axios.post(
-          `${process.env.REACT_APP_BACKEND_SERVER}/api/me/basket`,
+          `${API_BASE_URL}/api/me/basket`,
           newBasket,
           {
             headers: {
@@ -62,7 +63,7 @@ export default function Checkout({ products, basket, setBasket }) {
     try {
       const token = localStorage.getItem('token');
       await axios.post(
-        `${process.env.REACT_APP_BACKEND_SERVER}/api/me/basket`,
+        `${API_BASE_URL}/api/me/basket`,
         newBasket,
         {
           headers: {
@@ -115,7 +116,7 @@ export default function Checkout({ products, basket, setBasket }) {
       console.log('Purchased Product IDs:', purchasedProductIds);
 
       await axios.post(
-        `${process.env.REACT_APP_BACKEND_SERVER}/api/me/purchase`,
+        `${API_BASE_URL}/api/me/purchase`,
         { purchased_products: purchasedProductIds },
         {
           headers: {

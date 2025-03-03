@@ -88,16 +88,18 @@ const useUserInfo = () => {
   }, []);
 
   const getAvatarUrl = (username) => {
-  const user = users.find((user) => user.username === username);
-
-  if (user && user.avatar) {
-    // User has an avatar, use whatever URL backend provides
-    return user.avatar;  // This is already the proxy URL from backend
-  }
-
-  // Default avatar through backend proxy
-  return `${process.env.REACT_APP_BACKEND_SERVER}/api/me/avatar/user_default.png`;
-};
+    const user = users.find((user) => user.username === username);
+  
+    if (user && user.avatar && user.avatar.startsWith('https://')) {
+      return user.avatar;
+    }
+  
+    if (process.env.REACT_APP_USE_S3_STORAGE === 'true') {
+      return `https://${s3Config.S3_BUCKET}.s3.${s3Config.S3_REGION}.amazonaws.com/avatars/user_default.png`;
+    } else {
+      return `${API_BASE_URL}/api/me/avatar/user_default.png`;
+    }
+  };
   return {
     username,
     avatarUrl,

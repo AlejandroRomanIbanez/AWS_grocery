@@ -13,8 +13,9 @@
 
   <title>Market Mate</title>
   <script>
+      // This will be replaced by Flask's template engine
       window.REACT_APP_BACKEND_SERVER = "{{ backend_url }}";
-  </script>
+    </script>
 </head>
 
 <body>
