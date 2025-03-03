@@ -1,0 +1,49 @@
+# Ignore local Terraform directories
+.terraform/
+
+# Ignore Terraform state files (critical infrastructure data)
+*.tfstate
+
+# Ignore backup state directory and files (already deleted, but keep for safety)
+backup_state/
+*.tfstate.backup
+
+# Ignore crash logs
+crash.log
+crash.*.log
+
+# Ignore tfvars files (may contain sensitive secrets)
+*.tfvars
+*.tfvars.json
+
+# Ignore override files (not meant for version control)
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Ignore Terraform lock file (prevents parallel deployments)
+.terraform.tfstate.lock.info
+
+# Ignore Terraform plan files
+*tfplan*
+
+# Ignore Terraform CLI configuration files
+.terraformrc
+terraform.rc
+
+# Ignore IDE/editor files
+.DS_Store
+*.swp
+*.swo
+
+# Ignore additional log files (if any)
+*.log
+
+# Ignore sensitive files (e.g., SSH keys, if accidentally added)
+*.pem
+*.key
+*.pub
+
+# Ignore all 11 Readme's
+GroceryMateDocs/
