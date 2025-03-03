@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './AvatarModal.css';
 import useUserInfo from '../../hooks/useUserInfo'; // Import the custom hook
+import { API_BASE_URL } from '../../config';
 
 const AvatarModal = ({ isOpen, onClose }) => {
   const [file, setFile] = useState(null);
@@ -11,7 +12,7 @@ const AvatarModal = ({ isOpen, onClose }) => {
 
   useEffect(() => {
     if (isOpen) {
-      fetchUserInfo(); // Fetch user info when the modal opens
+      fetchUserInfo();
     }
   }, [isOpen, fetchUserInfo]);
 
@@ -29,7 +30,7 @@ const AvatarModal = ({ isOpen, onClose }) => {
       formData.append('file', file);
 
       try {
-        const response = await fetch(`${process.env.REACT_APP_BACKEND_SERVER}/api/me/avatar`, {
+        const response = await fetch(`${API_BASE_URL}/api/me/avatar`, {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -41,9 +42,9 @@ const AvatarModal = ({ isOpen, onClose }) => {
 
         if (response.ok) {
           setSuccessMessage('Avatar uploaded successfully');
-          setPreview(null); // Clear preview after upload
-          setFile(null); // Clear file after upload
-          fetchUserInfo(); // Refetch user info to get the updated avatar
+          setPreview(null);
+          setFile(null);
+          fetchUserInfo();
         } else {
           setErrorMessage(result.error || 'Failed to upload avatar');
         }

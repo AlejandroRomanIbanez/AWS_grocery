@@ -6,6 +6,7 @@ import ProductComments from './ProductComments/ProductComments';
 import NewReview from './ProductNewReview/ProductNewReview';
 import './ProductDetail.css';
 import SkeletonDetail from '../Skeleton/SkeletonDetail';
+import { API_BASE_URL } from '../../config';
 
 const ProductDetail = () => {
   const { productId } = useParams();
@@ -18,7 +19,7 @@ const ProductDetail = () => {
   useEffect(() => {
     const fetchProductDetail = async () => {
       try {
-        const response = await axios.get(`${process.env.REACT_APP_BACKEND_SERVER}/api/products/${productId}`);
+        const response = await axios.get(`${API_BASE_URL}/api/products/${productId}`);
         setProductDetailItem(response.data);
       } catch (error) {
         console.error("Failed to fetch product details:", error);
@@ -29,7 +30,7 @@ const ProductDetail = () => {
       try {
         const token = localStorage.getItem('token');
         if (token) {
-          const response = await axios.get(`${process.env.REACT_APP_BACKEND_SERVER}/api/me/purchased-products`, {
+          const response = await axios.get(`${API_BASE_URL}/api/me/purchased-products`, {
             headers: {
               Authorization: `Bearer ${token}`
             }
@@ -70,7 +71,7 @@ const ProductDetail = () => {
 
   const handleDeleteReview = async (authorName) => {
     try {
-      await axios.delete(`${process.env.REACT_APP_BACKEND_SERVER}/api/products/${productId}/remove-review`, {
+      await axios.delete(`${API_BASE_URL}/api/products/${productId}/remove-review`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
@@ -90,7 +91,7 @@ const ProductDetail = () => {
 
   const handleEditReview = async (authorName, newRating, newComment) => {
     try {
-      await axios.put(`${process.env.REACT_APP_BACKEND_SERVER}/api/products/${productId}/update-review`, {
+      await axios.put(`${API_BASE_URL}/api/products/${productId}/update-review`, {
         author_name: authorName,
         rating: newRating,
         comment: newComment

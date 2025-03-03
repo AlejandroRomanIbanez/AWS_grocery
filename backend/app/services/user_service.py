@@ -1,15 +1,75 @@
 import os
+import time
+from typing import List, Dict
+import boto3
+import requests
+from botocore.exceptions import NoCredentialsError
 from flask import current_app
 from werkzeug.utils import secure_filename
-from typing import List, Dict
-from sqlalchemy import cast, ARRAY, Integer
 from .. import db
 from ..models.user_model import User, BasketItem
 from ..models.product_model import Product
 
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-UPLOAD_FOLDER = os.path.join(os.getcwd(), 'avatar')
+UPLOAD_FOLDER = os.path.join(BASE_DIR, '..', 'avatar')
+UPLOAD_FOLDER = os.path.abspath(UPLOAD_FOLDER)
+print(f"UPLOAD_FOLDER set to: {UPLOAD_FOLDER}")
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+S3_BUCKET = os.getenv('S3_BUCKET_NAME')
+S3_REGION = os.getenv('S3_REGION')
+USE_S3_STORAGE = os.getenv("USE_S3_STORAGE", "false").lower() == "true"
+DEFAULT_AVATAR = 'user_default.png'
+DEFAULT_AVATAR_S3_URL = f"https://{S3_BUCKET}.s3.{S3_REGION}.amazonaws.com/avatars/{DEFAULT_AVATAR}"
+DEFAULT_AVATAR_LOCAL_PATH = os.path.join(UPLOAD_FOLDER, DEFAULT_AVATAR)
+
+
+def is_ec2_instance():
+    """Detects if the script is running on an EC2 instance by checking instance metadata."""
+    try:
+        response = requests.get("http://169.254.169.254/latest/meta-data/", timeout=0.1)
+        return response.status_code == 200
+    except requests.RequestException:
+        return False
+
+
+def get_s3_client():
+    """
+    Returns an S3 client based on the storage option.
+    """
+    if USE_S3_STORAGE:
+        if is_ec2_instance():
+            session = boto3.Session()
+            return session.client('s3', region_name=S3_REGION)
+        return boto3.client(
+                's3',
+                region_name=S3_REGION,
+                aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
+                aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY'),
+                aws_session_token=os.getenv('AWS_SESSION_TOKEN')
+            )
+    return None
+
+
+s3_client = get_s3_client()
+
+
+def get_avatar_url(user):
+    """
+    Returns the avatar URL based on storage option and user's current avatar status.
+    Now returns API URLs for both S3 and local storage.
+    """
+    if USE_S3_STORAGE:
+        if user.avatar and user.avatar.startswith(f"https://{S3_BUCKET}.s3"):
+            filename = user.avatar.split('/')[-1]
+            return f"/api/me/avatar/{filename}"
+        return f"/api/me/avatar/{DEFAULT_AVATAR}"
+    else:
+        if user.avatar:
+            local_avatar_path = os.path.join(UPLOAD_FOLDER, user.avatar)
+            if os.path.exists(local_avatar_path):
+                return f"/api/me/avatar/{user.avatar}"
+        return f"/api/me/avatar/{DEFAULT_AVATAR}"
 
 
 def get_all_users() -> list:
@@ -27,11 +87,12 @@ def get_all_users() -> list:
             "id": user.id,
             "username": user.username,
             "email": user.email,
-            "avatar": user.avatar if user.avatar else 'user_default.png',
+            "avatar": get_avatar_url(user),
         })
 
     current_app.logger.info(f"Retrieved {len(users)} users.")
     return user_list
+
 
 def get_user_info(user_id: int) -> dict:
     """
@@ -52,20 +113,33 @@ def get_user_info(user_id: int) -> dict:
             "fav_products": user.fav_products,
             "basket": [item.to_dict() for item in user.basket_items],
             "purchased_products": user.purchased_products,
-            "avatar": user.avatar
+            "avatar": get_avatar_url(user)
         }
     current_app.logger.warning(f"User with ID {user_id} not found.")
     return {}
 
 
 def add_to_favorites(user_id: int, product_id: int) -> dict:
+    """
+    Adds a product to the user's list of favorite products in the database.
+
+    Args:
+        user_id (int): The ID of the user.
+        product_id (int): The ID of the product to add.
+
+    Returns:
+        dict: The raw result of the update operation.
+    """
     user = User.query.get(user_id)
     if not user:
         current_app.logger.error(f"User with ID {user_id} not found.")
         return {"error": "User not found"}
 
-    if product_id not in user.fav_products:
-        user.fav_products = cast(user.fav_products + [product_id], ARRAY(Integer))
+    fav_products = [int(p) for p in user.fav_products.split(',')] if user.fav_products else []
+
+    if product_id not in fav_products:
+        fav_products.append(product_id)
+        user.fav_products = ','.join(map(str, fav_products))
         current_app.logger.info(f"Adding product {product_id} to user {user_id}'s favorites.")
 
         try:
@@ -97,8 +171,11 @@ def remove_from_favorites(user_id: int, product_id: int) -> dict:
         current_app.logger.error(f"User with ID {user_id} not found.")
         return {"error": "User not found"}
 
-    if product_id in user.fav_products:
-        user.fav_products = cast([p for p in user.fav_products if p != product_id], ARRAY(Integer))
+    fav_products = [int(p) for p in user.fav_products.split(',')] if user.fav_products else []
+
+    if product_id in fav_products:
+        fav_products.remove(product_id)
+        user.fav_products = ','.join(map(str, fav_products))
         current_app.logger.info(f"Removing product {product_id} from user {user_id}'s favorites.")
 
         try:
@@ -126,7 +203,8 @@ def get_user_favorites(user_id: int) -> list:
     """
     user = User.query.get(user_id)
     if user:
-        favorite_products = Product.query.filter(Product.id.in_(user.fav_products)).all()
+        fav_products = [int(p) for p in user.fav_products.split(',')] if user.fav_products else []
+        favorite_products = Product.query.filter(Product.id.in_(fav_products)).all()
         current_app.logger.info(f"Fetched {len(favorite_products)} favorite products for user {user_id}.")
         return [product.to_dict() for product in favorite_products]
     current_app.logger.warning(f"No favorites found for user {user_id}.")
@@ -247,8 +325,11 @@ def add_product_to_purchased(user_id: int, product_ids: List[int]) -> dict:
         current_app.logger.error(f"User with ID {user_id} not found.")
         return {"error": "User not found"}
 
-    user.purchased_products.extend(product_ids)
-    user.purchased_products = list(set(user.purchased_products))
+    purchased_products = [int(p) for p in user.purchased_products.split(',')] if user.purchased_products else []
+    purchased_products.extend(product_ids)
+    purchased_products = list(set(purchased_products))
+
+    user.purchased_products = ','.join(map(str, purchased_products))
     db.session.commit()
     current_app.logger.info(f"Added products {product_ids} to user {user_id}'s purchased products.")
     return {"message": "Products purchased successfully"}
@@ -264,8 +345,9 @@ def get_user_purchased_products(user_id: int) -> List[Dict]:
     """
     user = User.query.get(user_id)
     if user:
+        purchased_products = [int(p) for p in user.purchased_products.split(',')] if user.purchased_products else []
         current_app.logger.info(f"Fetched purchased products for user {user_id}.")
-        return user.purchased_products
+        return purchased_products
     current_app.logger.warning(f"No purchased products found for user {user_id}.")
     return []
 
@@ -311,6 +393,7 @@ def save_avatar(user_id, file):
     """
     Save the user's avatar in the images folder, update the user's avatar in the database,
     and only after a successful upload, delete the old avatar if it exists and is not 'user_default.png'.
+    Uses a timestamp to ensure unique filenames.
 
     Args:
         user_id (int): The ID of the user.
@@ -327,30 +410,41 @@ def save_avatar(user_id, file):
         current_app.logger.error(f"User with ID {user_id} not found.")
         return {"error": "User not found"}
 
-    filename = secure_filename(f"user_{user_id}_{file.filename}")
-    filepath = os.path.join(UPLOAD_FOLDER, filename)
-    old_avatar = user.avatar
+    # Add timestamp to ensure unique filename
+    timestamp = int(time.time())
+    filename = secure_filename(f"user_{user_id}_{timestamp}_{file.filename}")
+    if USE_S3_STORAGE:
+        try:
+            s3_client.upload_fileobj(
+                file,
+                S3_BUCKET,
+                f"avatars/{filename}",
+                ExtraArgs={'ContentType': file.content_type}
+            )
+            user.avatar = f"https://{S3_BUCKET}.s3.{S3_REGION}.amazonaws.com/avatars/{filename}"
+            db.session.commit()
+            current_app.logger.info(f"Avatar for user {user_id} uploaded to S3 as {filename}.")
+            return {"message": "Avatar uploaded successfully", "avatar_url": get_avatar_url(user)}
+        except NoCredentialsError:
+            current_app.logger.error("AWS credentials not available.")
+            return {"error": "Failed to upload avatar to S3"}
+    else:
+        filepath = os.path.join(UPLOAD_FOLDER, filename)
+        old_avatar = user.avatar
 
-    try:
-        os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+        try:
+            os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+            file.save(filepath)
+            user.avatar = filename
+            db.session.commit()
+            current_app.logger.info(f"Avatar for user {user_id} saved locally as {filename}")
 
-        file.save(filepath)
-        current_app.logger.info(f"File saved successfully at {filepath} for user {user_id}.")
-
-        user.avatar = filename
-        db.session.commit()
-        current_app.logger.info(f"User {user_id}'s avatar updated to {filename}.")
-
-        if old_avatar and old_avatar != 'user_default.png':
-            old_avatar_path = os.path.join(UPLOAD_FOLDER, old_avatar)
-            if os.path.exists(old_avatar_path):
-                try:
+            if old_avatar and old_avatar != DEFAULT_AVATAR:
+                old_avatar_path = os.path.join(UPLOAD_FOLDER, old_avatar)
+                if os.path.exists(old_avatar_path):
                     os.remove(old_avatar_path)
                     current_app.logger.info(f"Deleted old avatar {old_avatar} for user {user_id}.")
-                except Exception as e:
-                    current_app.logger.error(f"Error deleting old avatar {old_avatar}: {e}")
-
-        return {"message": "Avatar uploaded successfully", "avatar_url": filepath}
-    except Exception as e:
-        current_app.logger.error(f"Error saving avatar for user {user_id}: {e}")
-        return {"error": "Failed to upload avatar"}
+            return {"message": "Avatar uploaded successfully", "avatar_url": get_avatar_url(user)}
+        except Exception as e:
+            current_app.logger.error(f"Error saving avatar locally for user {user_id}: {e}")
+            return {"error": "Failed to upload avatar"}

@@ -1,0 +1,22 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "autoscaling:CreateAutoScalingGroup",
+                "autoscaling:UpdateAutoScalingGroup",
+                "autoscaling:Describe*",
+                "iam:CreateServiceLinkedRole",
+                "iam:PassRole",
+                "elasticloadbalancing:Describe*",
+                "elasticloadbalancing:RegisterTargets",
+                "ec2:RunInstances",
+                "ec2:Describe*",
+                "rds:CreateDBInstance",
+                "rds:DescribeDBInstances"
+            ],
+            "Resource": "*"
+        }
+    ]
+}

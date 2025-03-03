@@ -4,6 +4,7 @@ import axios from 'axios';
 import { toast, Toaster } from 'react-hot-toast'; // Import react-hot-toast
 import './Auth.css';
 import logo from '../Assets/Frame2.png';
+import { API_BASE_URL } from '../../config';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -66,7 +67,7 @@ const LoginForm = ({ handleSwitch }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post(`${process.env.REACT_APP_BACKEND_SERVER}/api/auth/login`, { email, password });
+      const response = await axios.post(`${API_BASE_URL}/api/auth/login`, { email, password });
       console.log(response.data);
       localStorage.setItem('token', response.data.access_token);
       window.location.href = '/';
@@ -96,7 +97,7 @@ const RegisterForm = ({ handleSwitch }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post(`${process.env.REACT_APP_BACKEND_SERVER}/api/auth/register`, { username: name, email, password });
+      const response = await axios.post(`${API_BASE_URL}/api/auth/register`, { username: name, email, password });
       console.log(response.data);
       handleSwitch();
       toast.success('Registration successful. Please log in.');

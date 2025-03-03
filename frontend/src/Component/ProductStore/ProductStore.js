@@ -4,6 +4,7 @@ import ProductHeader from '../ProductStore/ProductHeader/ProductHeader';
 import Sidebar from './Sidebar/Sidebar';
 import './ProductStore.css';
 import axios from 'axios';
+import { API_BASE_URL } from '../../config';
 
 const ProductStore = ({ products, isFav, basket, setBasket }) => {
   const [filteredProducts, setFilteredProducts] = useState([]);
@@ -18,7 +19,7 @@ const ProductStore = ({ products, isFav, basket, setBasket }) => {
     const fetchFavorites = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await axios.get(`${process.env.REACT_APP_BACKEND_SERVER}/api/me/favorites`, {
+        const response = await axios.get(`${API_BASE_URL}/api/me/favorites`, {
           headers: {
             Authorization: `Bearer ${token}`
           }

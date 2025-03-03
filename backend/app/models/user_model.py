@@ -25,9 +25,9 @@ class User(db.Model):
     username = db.Column(db.String(50), nullable=False)
     email = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
-    fav_products = db.Column(db.ARRAY(db.Integer), default=[])
+    fav_products = db.Column(db.String, default="")
     basket_items = db.relationship('BasketItem', backref='user', lazy=True, cascade="all, delete-orphan")
-    purchased_products = db.Column(db.ARRAY(db.Integer), default=[])
+    purchased_products = db.Column(db.String, default="")
     avatar = db.Column(db.String(255), nullable=True)
 
 

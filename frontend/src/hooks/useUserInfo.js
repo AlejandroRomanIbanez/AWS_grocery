@@ -1,13 +1,37 @@
 import { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../config';
 
 const useUserInfo = () => {
   const [username, setUsername] = useState('');
   const [avatarUrl, setAvatarUrl] = useState(null);
   const [users, setUsers] = useState([]);
+  const [s3Config, setS3Config] = useState({
+    USE_S3_STORAGE: false,
+    S3_BUCKET: '',
+    S3_REGION: ''
+  });
+
+  useEffect(() => {
+    fetchConfig();
+  }, []);
+
+  const fetchConfig = async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/config`);
+      if (response.ok) {
+        const configData = await response.json();
+        setS3Config(configData);
+      } else {
+        console.error("Failed to fetch config");
+      }
+    } catch (error) {
+      console.error("Error fetching config:", error);
+    }
+  };
 
   const fetchUserInfo = async () => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_SERVER}/api/me/info`, {
+      const response = await fetch(`${API_BASE_URL}/api/me/info`, {
         method: 'GET',
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -17,7 +41,7 @@ const useUserInfo = () => {
       if (response.ok) {
         const data = await response.json();
         setUsername(data.username);
-        setAvatarUrl(`${process.env.REACT_APP_BACKEND_SERVER}/api/me/avatar/${data.avatar || 'user_default.png'}`);
+        setAvatarUrl(data.avatar);
       } else {
         console.error('Failed to fetch user info');
       }
@@ -28,7 +52,7 @@ const useUserInfo = () => {
 
   const fetchAllUsers = async () => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_SERVER}/api/me/all-users`, {
+      const response = await fetch(`${API_BASE_URL}/api/me/all-users`, {
         method: 'GET',
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -47,7 +71,7 @@ const useUserInfo = () => {
   };
 
   const updateAvatarInState = (newAvatar) => {
-    const newAvatarUrl = `${process.env.REACT_APP_BACKEND_SERVER}/api/me/avatar/${newAvatar}`;
+    const newAvatarUrl = newAvatar;
     setAvatarUrl(newAvatarUrl);
     
     // Update the users list locally to reflect the new avatar for the current user
@@ -63,13 +87,17 @@ const useUserInfo = () => {
     fetchAllUsers();
   }, []);
 
-  const getAvatarUrl = (author) => {
-    const user = users.find((user) => user.username === author);
-    return user
-      ? `${process.env.REACT_APP_BACKEND_SERVER}/api/me/avatar/${user.avatar}`
-      : `${process.env.REACT_APP_BACKEND_SERVER}/api/me/avatar/user_default.png`;
-  };
+  const getAvatarUrl = (username) => {
+  const user = users.find((user) => user.username === username);
 
+  if (user && user.avatar) {
+    // User has an avatar, use whatever URL backend provides
+    return user.avatar;  // This is already the proxy URL from backend
+  }
+
+  // Default avatar through backend proxy
+  return `${process.env.REACT_APP_BACKEND_SERVER}/api/me/avatar/user_default.png`;
+};
   return {
     username,
     avatarUrl,

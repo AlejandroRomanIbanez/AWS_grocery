@@ -1,8 +1,6 @@
 from .. import db
 from flask import current_app
-from bson import ObjectId
 from typing import List, Dict
-from ..helpers import serialize_object_id
 from ..models.product_model import Review, Product
 
 
@@ -13,9 +11,15 @@ def get_all_products() -> List[Dict]:
     Returns:
         List[Dict]: A list of dictionaries, each representing a product.
     """
-    products_collection = Product.query.all()
-    current_app.logger.info("Fetched all products from the database")
-    return [product.to_dict() for product in products_collection]
+    try:
+        products_collection = Product.query.all()
+        current_app.logger.debug(f"Products fetched: {products_collection}")
+        if not products_collection:
+            current_app.logger.error("No products fetched from the database.")
+        return [product.to_dict() for product in products_collection]
+    except Exception as e:
+        current_app.logger.error(f"Error fetching products: {str(e)}")
+        return []
 
 def get_product_by_id(product_id: int) -> Dict:
     """

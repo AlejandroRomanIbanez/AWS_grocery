@@ -1,31 +1,53 @@
-GroceryMate
+# GroceryMate
 
+## 🏆 GroceryMate E-Commerce Platform
 
-Overview
+[![Python](https://img.shields.io/badge/Language-Python%2C%20JavaScript-blue)](https://www.python.org/)
+[![OS](https://img.shields.io/badge/OS-Linux%2C%20Windows%2C%20macOS-green)](https://www.kernel.org/)
+[![Database](https://img.shields.io/badge/Database-PostgreSQL-336791)](https://www.postgresql.org/)
+[![GitHub Release](https://img.shields.io/github/v/release/AlejandroRomanIbanez/AWS_grocery)](https://github.com/AlejandroRomanIbanez/AWS_grocery/releases/tag/v2.0.0)
+[![Free](https://img.shields.io/badge/Free_for_Non_Commercial_Use-brightgreen)](#-license)
 
-GroceryMate is a comprehensive e-commerce platform offering the following features:
+⭐ **Star us on GitHub** — it motivates us a lot!
 
-    User Authentication: Register and login functionality.
-    Protected Routes: All the routes that need to be authenticated will redirect to /auth
-    Product Search: Search for products, sort them by price, and filter by categories.
-    Favorites: Add products to your favorites list.
-    Shopping Basket: Add products to your basket and manage them.
-    Check-out Process: Complete the checkout process with billing and shipping information, choose payment methods, and calculate the total price.
+---
 
-Features
+## 📌 Table of Contents
 
-    Register, Login, and Logout: Secure user authentication system.
-    Product Search and Sorting: Search for products, and sort them by price or name in both ASC and DESC.
-    Product Category and Price Range: Get the product by categories or range of price
-    Favorites: Manage your favorite products.
-    Shopping Basket: Add products to your basket, view, and modify the contents.
-    Check-out Process:
-        Billing and Shipping Information
-        Payment Method Selection
-        Total Price Calculation
+- [Overview](#-overview)
+- [Features](#-features)
+- [Screenshots & Demo](#-screenshots--demo)
+- [Prerequisites](#-prerequisites)
+- [Installation](#-installation)
+  - [Clone Repository](#-clone-repository)
+  - [Configure PostgreSQL](#-configure-postgresql)
+  - [Populate Database](#-populate-database)
+  - [Set Up Python Environment](#-set-up-python-environment)
+  - [Set Environment Variables](#-set-environment-variables)
+  - [Start the Application](#-start-the-application)
+- [Usage](#-usage)
+- [Contributing](#-contributing)
+- [License](#-license)
 
-Screenshots and videos
+## 🚀 Overview
 
+GroceryMate is an application developed as part of the Masterschools program by **Alejandro Roman Ibanez**. It is a modern, full-featured e-commerce platform designed for seamless online grocery shopping. It provides an intuitive user interface and a secure backend, allowing users to browse products, manage their shopping basket, and complete purchases efficiently.
+
+GroceryMate is a modern, full-featured e-commerce platform designed for seamless online grocery shopping. It provides an intuitive user interface and a secure backend, allowing users to browse products, manage their shopping basket, and complete purchases efficiently.
+
+## 🛒 Features
+
+- **🛡️ User Authentication**: Secure registration, login, and session management.
+- **🔒 Protected Routes**: Access control for authenticated users.
+- **🔎 Product Search & Filtering**: Browse products, apply filters, and sort by category or price.
+- **⭐ Favorites Management**: Save preferred products.
+- **🛍️ Shopping Basket**: Add, view, modify, and remove items.
+- **💳 Checkout Process**:
+  - Secure billing and shipping information handling.
+  - Multiple payment options.
+  - Automatic total price calculation.
+
+## 📸 Screenshots & Demo
 
 ![imagen](https://github.com/user-attachments/assets/ea039195-67a2-4bf2-9613-2ee1e666231a)
 ![imagen](https://github.com/user-attachments/assets/a87e5c50-5a9e-45b8-ad16-2dbff41acd00)
@@ -34,76 +56,112 @@ Screenshots and videos
 
 https://github.com/user-attachments/assets/d1c5c8e4-5b16-486a-b709-4cf6e6cce6bc
 
+## 📋 Prerequisites
+
+Ensure the following dependencies are installed before running the application:
+
+- **🐍 Python (>=3.11)**
+- **🐘 PostgreSQL** – Database for storing product and user information.
+- **🛠️ Git** – Version control system.
+
+## ⚙️ Installation
+
+### 🔹 Clone Repository
+
+```sh
+git clone --branch version2 https://github.com/AlejandroRomanIbanez/AWS_grocery.git && cd AWS_grocery
+```
+
+### 🔹 Configure PostgreSQL
+
+Before creating the database user, you can choose a custom username and password to enhance security. Replace `<your_secure_password>` with a strong password of your choice in the following commands.
+
+Create database and user:
+
+```sh
+psql -U postgres -c "CREATE DATABASE grocerymate_db;"
+psql -U postgres -c "CREATE USER grocery_user WITH ENCRYPTED PASSWORD '<your_secure_password>';"  # Replace <your_secure_password> with a strong password of your choice
+psql -U postgres -c "ALTER USER grocery_user WITH SUPERUSER;"
+```
+
+### 🔹 Populate Database
+
+```sh
+psql -U grocery_user -d grocerymate_db -f backend/app/sqlite_dump_clean.sql
+```
+
+Verify insertion:
+
+```sh
+psql -U grocery_user -d grocerymate_db -c "SELECT * FROM users;"
+psql -U grocery_user -d grocerymate_db -c "SELECT * FROM products;"
+```
+
+### 🔹 Set Up Python Environment
+
+
+Install dependencies in an activated virtual Enviroment:
+
+```sh
+cd backend
+pip install -r requirements.txt
+```
 
 
 
-Installation
+### 🔹 Set Environment Variables
 
-Follow these steps to set up the application locally.
-Create .env files in the backend and frontend, and follow the .env.examples to know what is required
+Create a `.env` file:
 
-Backend
+```sh
+touch .env  # macOS/Linux
+ni .env -Force  # Windows
+```
 
-Clone the Repository:
+Generate a secure JWT key:
 
-    bash
-    cd backend
+```sh
+python3 -c "import secrets; print(secrets.token_hex(32))"
+```
 
-Create and Activate a Virtual Environment:
+Update `.env` with:
 
-    bash
+```ini
+JWT_SECRET_KEY=<your_generated_key>
+POSTGRES_USER=grocery_user
+POSTGRES_PASSWORD=grocery_test
+POSTGRES_DB=grocerymate_db
+POSTGRES_HOST=localhost
+POSTGRES_URI=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:5432/${POSTGRES_DB}
+```
 
-    python -m venv venv
-    source venv/bin/activate  # On Windows use `venv\Scripts\activate`
+### 🔹 Start the Application
 
-Install Requirements:
+```sh
+python3 run.py
+```
 
-    bash
-    
-    pip install -r requirements.txt
+## 📖 Usage
 
-Run the Application:
+- Access the application at [http://localhost:5000](http://localhost:5000)
+- Register/Login to your account
+- Browse and search for products
+- Manage favorites and shopping basket
+- Proceed through the checkout process
 
-    bash
-    
-    python run.py
+## 🤝 Contributing
 
-Frontend
+We welcome contributions! Please follow these steps:
 
-Navigate to the Frontend Directory:
+1. Fork the repository.
+2. Create a new feature branch (`feature/your-feature`).
+3. Implement your changes and commit them.
+4. Push your branch and create a pull request.
 
-    bash
+## 📜 License
 
-    cd ../frontend
+This project is licensed under the MIT License.
 
-Install Dependencies:
 
-    bash
-    
-    npm install
 
-Start the Application:
 
-    bash
-    
-        npm start
-
-Usage
-
-    Register or Login:
-        Open the application in your browser.
-        Register a new account or login with your existing credentials.
-
-    Search for Products:
-        Use the search bar to find products.
-        Sort products by price or filter by categories.
-
-    Add to Favorites and Basket:
-        Add products to your favorites list for quick access.
-        Add products to your basket to proceed with the purchase.
-
-    Checkout:
-        Go to your basket and click on the checkout button.
-        Fill in your billing and shipping information.
-        Choose your preferred payment method.
-        Review the total cost and confirm your purchase.
