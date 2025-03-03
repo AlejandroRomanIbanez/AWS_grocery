@@ -19,9 +19,6 @@ variable "private_subnet_count" {
   default     = 2
 }
 
-# Availability Zones (Dynamic)
-data "aws_availability_zones" "available" {}
-
 variable "availability_zones" {
   description = "List of available AZs"
   type        = list(string)

@@ -24,7 +24,7 @@ resource "aws_security_group" "web_sg" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = var.ssh_cidr  # ✅ Uses a variable for restricted SSH access
+    cidr_blocks = var.ssh_cidr  # ✅ Uses a variable for restricted SSH access, now IPv4
   }
 
   # Allow EC2 to communicate with RDS on port 5432
@@ -46,4 +46,32 @@ resource "aws_security_group" "web_sg" {
   tags = {
     Name = "Web Security Group"  # ✅ Helps track security groups in AWS
   }
+}
+
+resource "aws_security_group" "bastion_sg" {
+  name        = "bastion-sg"
+  description = "Security group for the Bastion Host"
+  vpc_id      = var.vpc_id
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = var.manual_ip == "auto" ? [format("%s/32", data.external.my_ip.result.ip)] : [var.manual_ip]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "BastionHostSG"
+  }
+}
+
+data "external" "my_ip" {
+  program = ["bash", "-c", "echo '{\"ip\": \"'$(curl -s https://checkip.amazonaws.com)'\"}'"]
 }

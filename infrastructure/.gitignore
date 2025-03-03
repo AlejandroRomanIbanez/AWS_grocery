@@ -3,7 +3,10 @@
 
 # Ignore Terraform state files (critical infrastructure data)
 *.tfstate
-*.tfstate.*
+
+# Ignore backup state directory and files (already deleted, but keep for safety)
+backup_state/
+*.tfstate.backup
 
 # Ignore crash logs
 crash.log
@@ -28,3 +31,19 @@ override.tf.json
 # Ignore Terraform CLI configuration files
 .terraformrc
 terraform.rc
+
+# Ignore IDE/editor files
+.DS_Store
+*.swp
+*.swo
+
+# Ignore additional log files (if any)
+*.log
+
+# Ignore sensitive files (e.g., SSH keys, if accidentally added)
+*.pem
+*.key
+*.pub
+
+# Ignore all 11 Readme's
+GroceryMateDocs/

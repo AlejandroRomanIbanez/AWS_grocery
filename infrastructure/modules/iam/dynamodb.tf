@@ -1,3 +1,4 @@
+/*
 resource "aws_dynamodb_table" "terraform_locks" {
   name           = "terraform-lock"
   billing_mode   = "PAY_PER_REQUEST"
@@ -9,4 +10,9 @@ resource "aws_dynamodb_table" "terraform_locks" {
   tags = {
     Name = "Terraform Lock Table"
   }
+}
+*/
+
+data "aws_dynamodb_table" "existing" {
+  name = "terraform-lock"
 }

@@ -1,0 +1,30 @@
+{
+    "Statement": [
+        {
+            "Action": [
+                "s3:GetObject",
+                "s3:ListBucket",
+                "s3:PutObject",
+                "s3:DeleteObject"
+            ],
+            "Effect": "Allow",
+            "Resource": [
+                "arn:aws:s3:::grocerymate-terraform-state",
+                "arn:aws:s3:::grocerymate-terraform-state/*"
+            ]
+        },
+        {
+            "Action": [
+                "dynamodb:GetItem",
+                "dynamodb:PutItem",
+                "dynamodb:DeleteItem",
+                "dynamodb:DescribeTable"
+            ],
+            "Effect": "Allow",
+            "Resource": [
+                "arn:aws:dynamodb:eu-central-1:324037288022:table/terraform-lock"
+            ]
+        }
+    ],
+    "Version": "2012-10-17"
+}

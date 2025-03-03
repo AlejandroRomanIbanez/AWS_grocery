@@ -1,5 +1,5 @@
 variable "vpc_id" {
-  description = "The ID of the VPC"
+  description = "VPC ID for security groups"
   type        = string
 }
 
@@ -21,4 +21,9 @@ variable "http_cidr" {
 variable "private_cidr" {
   description = "Allowed CIDR block for private RDS access"
   type        = list(string)
+}
+
+variable "manual_ip" {
+  description = "Manual IP for SSH access, or 'auto' for dynamic IP detection"
+  type        = string
 }
