@@ -87,7 +87,7 @@ psql -U postgres -c "ALTER USER grocery_user WITH SUPERUSER;"
 ### 🔹 Populate Database
 
 ```sh
-psql -U grocery_user -d grocerymate_db -f app/sqlite_dump_clean.sql
+psql -U grocery_user -d grocerymate_db -f backend/app/sqlite_dump_clean.sql
 ```
 
 Verify insertion:
@@ -106,8 +106,10 @@ Install dependencies in an activated virtual Enviroment:
 cd backend
 pip install -r requirements.txt
 ```
-
-
+OR (if pip doesn't exist)
+```sh
+pip3 install -r requirements.txt
+```
 
 ### 🔹 Set Environment Variables
 

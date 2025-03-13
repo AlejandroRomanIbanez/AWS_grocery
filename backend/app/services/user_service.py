@@ -1,4 +1,5 @@
 import os
+import time
 from typing import List, Dict
 import boto3
 import requests
@@ -9,8 +10,11 @@ from .. import db
 from ..models.user_model import User, BasketItem
 from ..models.product_model import Product
 
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-UPLOAD_FOLDER = os.path.join(os.getcwd(), 'avatar')
+UPLOAD_FOLDER = os.path.join(BASE_DIR, '..', 'avatar')
+UPLOAD_FOLDER = os.path.abspath(UPLOAD_FOLDER)
+print(f"UPLOAD_FOLDER set to: {UPLOAD_FOLDER}")
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 S3_BUCKET = os.getenv('S3_BUCKET_NAME')
 S3_REGION = os.getenv('S3_REGION')
@@ -389,6 +393,7 @@ def save_avatar(user_id, file):
     """
     Save the user's avatar in the images folder, update the user's avatar in the database,
     and only after a successful upload, delete the old avatar if it exists and is not 'user_default.png'.
+    Uses a timestamp to ensure unique filenames.
 
     Args:
         user_id (int): The ID of the user.
@@ -405,7 +410,9 @@ def save_avatar(user_id, file):
         current_app.logger.error(f"User with ID {user_id} not found.")
         return {"error": "User not found"}
 
-    filename = secure_filename(f"user_{user_id}_{file.filename}")
+    # Add timestamp to ensure unique filename
+    timestamp = int(time.time())
+    filename = secure_filename(f"user_{user_id}_{timestamp}_{file.filename}")
     if USE_S3_STORAGE:
         try:
             s3_client.upload_fileobj(
@@ -430,13 +437,14 @@ def save_avatar(user_id, file):
             file.save(filepath)
             user.avatar = filename
             db.session.commit()
+            current_app.logger.info(f"Avatar for user {user_id} saved locally as {filename}")
 
             if old_avatar and old_avatar != DEFAULT_AVATAR:
                 old_avatar_path = os.path.join(UPLOAD_FOLDER, old_avatar)
                 if os.path.exists(old_avatar_path):
                     os.remove(old_avatar_path)
                     current_app.logger.info(f"Deleted old avatar {old_avatar} for user {user_id}.")
-            return {"message": "Avatar uploaded successfully", "avatar_url": filepath}
+            return {"message": "Avatar uploaded successfully", "avatar_url": get_avatar_url(user)}
         except Exception as e:
             current_app.logger.error(f"Error saving avatar locally for user {user_id}: {e}")
             return {"error": "Failed to upload avatar"}

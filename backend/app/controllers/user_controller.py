@@ -1,10 +1,7 @@
 import os
 from io import BytesIO
-
-from flask import jsonify, request, current_app, send_from_directory, redirect, send_file
+from flask import jsonify, request, current_app, send_from_directory, send_file
 from flask_jwt_extended import get_jwt_identity, jwt_required
-
-from ..models.user_model import User
 from ..services.user_service import (
     add_to_favorites, get_user_favorites, remove_from_favorites,
     sync_basket_service, get_user_basket, remove_from_basket_service,
@@ -25,6 +22,7 @@ def get_all_users_info():
     current_app.logger.info("Fetching information for all users.")
     users_info = get_all_users()
     return jsonify(users_info), 200
+
 
 @jwt_required()
 def get_current_user_info():
@@ -143,6 +141,7 @@ def get_basket():
 
     return jsonify(basket), 200
 
+
 @jwt_required()
 def remove_from_basket():
     """
@@ -227,6 +226,7 @@ def upload_avatar():
         return jsonify({"error": "No selected file"}), 400
 
     result = save_avatar(user_id, file)
+    current_app.logger.info(f"Avatar upload result for user {user_id}: {result}")
 
     if 'error' in result:
         return jsonify(result), 400
@@ -276,7 +276,17 @@ def serve_avatar(filename):
                 if os.path.exists(DEFAULT_AVATAR_LOCAL_PATH):
                     return send_from_directory(UPLOAD_FOLDER, DEFAULT_AVATAR)
 
-    if filename != DEFAULT_AVATAR and os.path.exists(DEFAULT_AVATAR_LOCAL_PATH):
+    file_path = os.path.join(UPLOAD_FOLDER, filename)
+    current_app.logger.info(f"Checking local avatar: {file_path}, exists: {os.path.exists(file_path)}")
+    if os.path.exists(file_path):
+        current_app.logger.info(f"Serving user avatar: {file_path}")
+        return send_from_directory(UPLOAD_FOLDER, filename)
+
+    default_path = DEFAULT_AVATAR_LOCAL_PATH
+    current_app.logger.info(f"Checking default avatar: {default_path}, exists: {os.path.exists(default_path)}")
+    if os.path.exists(default_path):
+        current_app.logger.info(f"Serving default avatar: {default_path}")
         return send_from_directory(UPLOAD_FOLDER, DEFAULT_AVATAR)
 
+    current_app.logger.warning(f"No avatar found for {filename}, default also missing at {default_path}")
     return jsonify({"error": "Avatar not found"}), 404

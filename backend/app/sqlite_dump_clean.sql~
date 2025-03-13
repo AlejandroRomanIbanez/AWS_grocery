@@ -1,3 +1,11 @@
+CREATE TABLE basket_items (
+    id SERIAL PRIMARY KEY,
+    product_id INTEGER NOT NULL,
+    quantity INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    FOREIGN KEY (product_id) REFERENCES products (id),
+    FOREIGN KEY (user_id) REFERENCES users (id)
+);
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     username TEXT NOT NULL,
@@ -17,15 +25,6 @@ CREATE TABLE products (
     category TEXT,
     image_url TEXT,
     is_alcohol BOOLEAN DEFAULT FALSE -- BOOLEAN for PostgreSQL
-);
-
-CREATE TABLE basket_items (
-    id SERIAL PRIMARY KEY,
-    product_id INTEGER NOT NULL,
-    quantity INTEGER NOT NULL,
-    user_id INTEGER NOT NULL,
-    FOREIGN KEY (product_id) REFERENCES products (id),
-    FOREIGN KEY (user_id) REFERENCES users (id)
 );
 
 INSERT INTO products VALUES(1,'Oranges','',0.8900000000000000133,'Fresh Vegetables','https://seleniumwebsites.fra1.digitaloceanspaces.com/grocery/Oranges.jpg',FALSE);

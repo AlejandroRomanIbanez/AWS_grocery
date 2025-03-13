@@ -69,35 +69,8 @@ def detect_environment():
         print("Could not detect database environment. Set POSTGRES_URI manually.")
     print(f"Using Database: {Config.SQLALCHEMY_DATABASE_URI}")
 
+
 detect_environment()
-
-
-def get_public_ip():
-    """Try multiple methods to get the public IP"""
-    # Method 1: AWS Instance Metadata
-    try:
-        response = requests.get('http://169.254.169.254/latest/meta-data/public-ipv4', timeout=1)
-        if response.status_code == 200:
-            return response.text.strip()
-    except requests.exceptions.RequestException:
-        pass
-
-    # Method 2: Public IP API services
-    ip_apis = [
-        'http://ipinfo.io/ip',
-        'https://api.ipify.org',
-        'http://ip-api.com/line/?fields=query'
-    ]
-
-    for api in ip_apis:
-        try:
-            response = requests.get(api, timeout=2)
-            if response.status_code == 200:
-                return response.text.strip()
-        except requests.exceptions.RequestException:
-            continue
-
-    return None
 
 
 def fetch_frontend():
@@ -250,36 +223,11 @@ def create_app():
     app.register_blueprint(config_bp)
 
     def inject_backend_url():
-        """Get the backend URL based on the current request"""
-        if DEPLOYMENT_ENV == "public_ip":
-            public_ip = get_public_ip()
-            if public_ip:
-                print(f"Using public IP: {public_ip}")
-                return f"http://{public_ip}:5000"
-
-            # Fallback: Try to get from request host
-            if request.host:
-                host = request.host.split(':')[0]
-                print(f"Falling back to request host: {host}")
-                return f"http://{host}:5000"
-
-            # Final fallback: Use the raw request URL
-            print(f"Using request URL: {request.url_root}")
-            return request.url_root.rstrip('/')
-
-        elif DEPLOYMENT_ENV == "load_balancer":
-            # Running behind a Load Balancer
-            if request.headers.get('X-Forwarded-Proto'):
-                proto = request.headers.get('X-Forwarded-Proto')
-                host = request.headers.get('X-Forwarded-Host', request.host)
-            else:
-                proto = request.scheme
-                host = request.host
-            return f"{proto}://{host}"
-
-        else:
-            # Default: Local development
-            return f"{request.scheme}://{request.host}"
+        """Get the backend URL based on the current request, works dynamically in all environments."""
+        proto = request.headers.get('X-Forwarded-Proto', request.scheme)
+        host = request.headers.get('X-Forwarded-Host', request.host)
+        print(f"Resolved URL - Proto: {proto}, Host: {host}")
+        return f"{proto}://{host}"
 
     @app.route("/", defaults={"path": ""})
     @app.route("/<path:path>")
