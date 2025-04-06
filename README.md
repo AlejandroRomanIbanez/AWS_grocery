@@ -128,6 +128,30 @@ OR (if pip doesn't exist)
 pip3 install -r requirements.txt
 ```
 
+> **💡 Careful:** If you're using Python v 3.13^ some pip-packages are incompatibel. Use
+>
+> ```sh
+> brew install pyenv
+> pyenv install 3.12.2
+> ```
+> cd into your backend folder and
+> ```sh
+> pyenv local 3.12.2
+> ```
+> If you already have your virtual environment created
+> ```sh
+> deactivate
+> rm -rf .venv
+> pyenv local 3.12.2
+> ```
+> Afterwards put in
+> ```sh
+> python -m venv .venv
+> source .venv/bin/activate
+> pip install -r requirements.txt
+> ```
+> All packages should be installable now.
+
 ### 🔹 Set Environment Variables
 
 Create a `.env` file:
