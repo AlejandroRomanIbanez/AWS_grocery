@@ -99,11 +99,28 @@ psql -U grocery_user -d grocerymate_db -c "SELECT * FROM products;"
 
 ### 🔹 Set Up Python Environment
 
-
-Install dependencies in an activated virtual Enviroment:
-
+1. Switch to the backend directory
 ```sh
 cd backend
+```
+
+2. Create a new virtual environment for the project:
+```sh
+python -m venv .venv
+```
+OR (if python doesn't exist)
+```sh
+python3 -m venv .venv
+```
+
+3. Activate the created environment:
+```sh
+source .venv/bin/activate
+```
+
+4. Install dependencies in an activated virtual Enviroment:
+
+```sh
 pip install -r requirements.txt
 ```
 OR (if pip doesn't exist)
