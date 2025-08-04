@@ -38,14 +38,14 @@ If you are new to AWS or Terraform, don’t worry! Every step is explained in de
 ---
 
 
-## 🚀 Overview
+##  Overview
 
 GroceryMate AWS Version 2 lets you deploy a full e-commerce platform in the AWS cloud – with modern, scalable architecture, all managed using Terraform.  
 This repository focuses on making cloud deployment and app integration easy and understandable for learners.
 
 ---
 
-## 🛒 Features
+##  Features
 
 **App Features:**
 - Secure user authentication (registration, login, sessions)
@@ -69,7 +69,7 @@ This repository focuses on making cloud deployment and app integration easy and 
 
 ---
 
-## 🏗️ Architecture
+##  Architecture
 
 The GroceryMate AWS infrastructure uses a modular and secure design, fully managed with Terraform.  
 All important AWS building blocks are included for a real-world, scalable web application.
@@ -112,7 +112,7 @@ Each box or icon stands for one piece of the cloud setup.
 A **NAT Gateway** is a special AWS component that lets servers in the private subnets connect to the Internet securely (for example, to download software updates).  
 This is important for production systems but can be expensive and requires extra AWS permissions.
 
-- The Terraform code for the NAT Gateway setup is already included in [`modules/main_vpc.tf`](modules/main_vpc.tf), but it is currently **commented out**.
+- The Terraform code for the NAT Gateway setup is already included in [`modules/main_vpc.tf`](infrastructure/my_terraform_project/modules/vpc/main_vpc.tf), but it is currently **commented out**.
 - Why? With my AWS student account, I do not have enough permissions to create a NAT Gateway (specifically, the `ec2:AllocateAddress` right, which must be approved by an AWS Admin).
 - **Workaround:**  
   For testing purposes, I manually created the NAT Gateway in the AWS Console, because my account did not allow automated creation via Terraform.
@@ -131,7 +131,7 @@ If you are new to AWS, take your time to review the diagram above and read throu
 Whenever you encounter something unclear, you can always refer back to this section for orientation!
 
 
-## 📁 Project Structure
+##  Project Structure
 
 Below you see the most important folders and files in this repository:
 
@@ -203,7 +203,7 @@ AWS_grocery_version2/
   → Main Terraform configuration files that define, describe, and output the AWS infrastructure.
 
 
-## ⚙️ Prerequisites
+##  Prerequisites
 
 Before you start, make sure you have **all the following installed and set up**:
 
@@ -245,7 +245,7 @@ Before you start, make sure you have **all the following installed and set up**:
 If you have a limited AWS budget or a student account, it’s best to monitor costs and use only the minimum resources for your testing.
 
 
-## 🏗️ Infrastructure Setup (Terraform)
+##  Infrastructure Setup (Terraform)
 
 This section shows you how to create all required AWS infrastructure (VPC, EC2, RDS, etc.) automatically using Terraform.
 
@@ -334,7 +334,7 @@ terraform destroy
 
 
 
-## 🗝️ SSH Key Setup
+##  SSH Key Setup
 
 To connect to your EC2 instances (virtual servers) via SSH, you need an SSH key pair:  
 - A **private key** (stays on your computer)  
@@ -396,7 +396,7 @@ ssh -i ~/.ssh/terraform_ssh_key ec2-user@<your-ec2-public-ip>
 - If you change the key, re-run ```terraform apply``` to update the EC2 configuration.
 
 
-## 🛠️ Application Setup (Backend)
+##  Application Setup (Backend)
 
 After your AWS infrastructure is deployed, you can set up and run the GroceryMate backend application on your EC2 instance(s).
 
@@ -518,7 +518,7 @@ docker logs <container_id>
 
 
 
-##  🚚  Migrating from Local PostgreSQL to AWS RDS (Step by Step)
+##   Migrating from Local PostgreSQL to AWS RDS (Step by Step)
 
 _This section documents the exact steps I followed to migrate GroceryMate from my local PostgreSQL database to AWS RDS during my Masterschool project.  
 It’s especially useful for anyone who wants to run the project with real data, or who needs help with RDS, Docker, or PostgreSQL on AWS._
@@ -571,7 +571,7 @@ If you want to use AWS RDS instead of a local PostgreSQL database, follow these 
 
 
 
-## 📸 Screenshots & Demo
+##  Screenshots & Demo
 
 ![imagen](https://github.com/user-attachments/assets/ea039195-67a2-4bf2-9613-2ee1e666231a)
 ![imagen](https://github.com/user-attachments/assets/a87e5c50-5a9e-45b8-ad16-2dbff41acd00)
@@ -581,7 +581,7 @@ If you want to use AWS RDS instead of a local PostgreSQL database, follow these 
 https://github.com/user-
 attachments/assets/d1c5c8e4-5b16-486a-b709-4cf6e6cce6bc
 
-## 🚀 Usage
+## Usage
 
 After setup and deployment, you can start using GroceryMate:
 
@@ -608,7 +608,7 @@ If you see a “site can’t be reached” error, make sure:
 - Your environment variables are set up correctly
 
 
-## 🐞 Troubleshooting
+## Troubleshooting
 
 Some common issues and solutions you might encounter during setup or deployment:
 
@@ -679,7 +679,7 @@ Manually remove or update the outdated entries in this file.
 
 ---
 
-## 🤝 Contributing
+##  Contributing
 
 Contributions and suggestions are always welcome – especially improvements for students and beginners!
 
@@ -692,7 +692,7 @@ If you have tips, fixes, or better ways to explain AWS/Terraform concepts for ne
 
 ---
 
-## 📜 License
+##  License
 
 This project is licensed under the MIT License.
 
