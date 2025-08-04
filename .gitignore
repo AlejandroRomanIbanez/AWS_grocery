@@ -1,6 +1,41 @@
-.idea/aws.xml
+# Terraform
+*.tfstate
+*.tfstate.*
+*.terraform/
+terraform.tfvars
+.terraform.lock.hcl
+tfplan
+infrastructure/my_terraform_project/build/lambda.zip
+.terraform
+infrastructure/my_terraform_project/.terraform
+
+
+# Python
+venv/
+*.egg-info/
+.Python
+
+# VSCode / PyCharm / JetBrains
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Frontend
 frontend/frontend-build.zip
 frontend/temp_extract/
 frontend/src/config.js~
-venv/
-.idea/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+
+# Secrets (falls vorhanden)
+*.pem
+.aws/
+
+.env
+*.env
+readme_old.md
