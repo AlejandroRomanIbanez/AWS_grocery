@@ -1,4 +1,4 @@
-# GroceryMate AWS Version 2 🚀
+# GroceryMate AWS with Terraform 🚀
 
 This project provides a complete, production-ready AWS infrastructure for the GroceryMate e-commerce application, using Terraform.
 It explains step by step how to deploy, connect, and run GroceryMate on AWS – including all common obstacles and special tips for students or beginners.
