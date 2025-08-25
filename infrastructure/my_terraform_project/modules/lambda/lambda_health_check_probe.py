@@ -5,7 +5,7 @@ http = urllib3.PoolManager()
 
 
 def lambda_handler(event, context):
-    url = "http://google.com"  # <-- manuell einsetzen
+    url = "http://google.com"  # <--z. B. google.com manuell einsetzen
 
     try:
         response = http.request("GET", url)

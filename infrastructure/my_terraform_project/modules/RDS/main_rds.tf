@@ -11,12 +11,12 @@ resource "aws_db_subnet_group" "rds_subnet_group" {
 # Create a dedicated Security Group for RDS
 resource "aws_security_group" "rds_sg" {
   name        = "rds-security-group"
-  description = "Allow MySQL access from EC2 only"
+  description = "Allow PostgerSQL access from EC2 only"
   vpc_id      = var.vpc_id  # VPC where this SG will be created
 
   # Allow MySQL access (port 3306) from the EC2 instance's security group
   ingress {
-    description      = "Allow MySQL from EC2"
+    description      = "Allow PostgreSQL from EC2"
     from_port        = 5432
     to_port          = 5432
     protocol         = "tcp"
