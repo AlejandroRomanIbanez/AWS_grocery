@@ -25,7 +25,7 @@ DEFAULT_AVATAR_LOCAL_PATH = os.path.join(UPLOAD_FOLDER, DEFAULT_AVATAR)
 
 
 def is_ec2_instance():
-    """Detects if the script is running on an EC2 instance by checking instance metadata."""
+    """Detects if the script is running on an ec2 instance by checking instance metadata."""
     try:
         response = requests.get("http://169.254.169.254/latest/meta-data/", timeout=0.1)
         return response.status_code == 200

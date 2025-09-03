@@ -1,0 +1,14 @@
+# Variable values used for deploying the GroceryMate infrastructure
+
+ami_id            = "your-ami-id-here"                  # e.g.Amazon Linux 2023 in eu-central-1 (Frankfurt)
+instance_type     = "e.g. t2.micro"                     # EC2 type
+key_name          = "e.g. my_name_terraform_ssh_key"    # Name of the key pair
+public_key_path   = "/Users/<your_username>/.ssh/id_rsa.pub" # Path to your public SSH key
+public_subnet_ids = [
+  "your-real-subnet-number1",
+  "your-real-subnet-number2"
+]                                                          # IDs of the public subnet exist in AWS
+vpc_id            = "your-real-vpc"                        # VPC ID exists in AWS
+user_data_script  = "scripts/install_docker.sh"            # Path to Docker install script
+db_password       = "your-db-password-here"                # password for your database
+
