@@ -17,6 +17,7 @@
 ## 📌 Table of Contents
 
 - [Overview](#-overview)
+- [Architecture Diagram](#architecture-diagram) 
 - [Features](#-features)
 - [Screenshots & Demo](#-screenshots--demo)
 - [Prerequisites](#-prerequisites)
@@ -33,9 +34,12 @@
 
 ## 🚀 Overview
 
-GroceryMate is an application developed as part of the Masterschools program by **Alejandro Roman Ibanez**. It is a modern, full-featured e-commerce platform designed for seamless online grocery shopping. It provides an intuitive user interface and a secure backend, allowing users to browse products, manage their shopping basket, and complete purchases efficiently.
+GroceryMate is an application developed as part of the Masterschools program. It is a modern, full-featured e-commerce platform designed for seamless online grocery shopping. It provides an intuitive user interface and a secure backend, allowing users to browse products, manage their shopping basket, and complete purchases efficiently.
 
 GroceryMate is a modern, full-featured e-commerce platform designed for seamless online grocery shopping. It provides an intuitive user interface and a secure backend, allowing users to browse products, manage their shopping basket, and complete purchases efficiently.
+
+![AWS Architecture](https://github.com/user-attachments/assets/0c208f8e-64e8-4466-9d41-be69ddd8dc88)
+
 
 ## 🛒 Features
 
