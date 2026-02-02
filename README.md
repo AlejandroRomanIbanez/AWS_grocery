@@ -19,6 +19,7 @@
 - [Overview](#-overview)
 - [Features](#-features)
 - [Screenshots & Demo](#-screenshots--demo)
+- [Cloud Infrastructure](#-cloud-infrastructure-aws--terraform)
 - [Prerequisites](#-prerequisites)
 - [Installation](#-installation)
   - [Clone Repository](#-clone-repository)
@@ -33,7 +34,7 @@
 
 ## 🚀 Overview
 
-GroceryMate is an application developed as part of the Masterschools program by **Alejandro Roman Ibanez**. It is a modern, full-featured e-commerce platform designed for seamless online grocery shopping. It provides an intuitive user interface and a secure backend, allowing users to browse products, manage their shopping basket, and complete purchases efficiently.
+GroceryMate is an application developed as part of the Masterschools program by **Alejandro Roman Ibanez**, with **Cloud Infrastructure & DevOps automation** designed and implemented by **Youssef El Maach**. It is a modern, full-featured e-commerce platform designed for seamless online grocery shopping. It provides an intuitive user interface and a secure backend, allowing users to browse products, manage their shopping basket, and complete purchases efficiently.
 
 GroceryMate is a modern, full-featured e-commerce platform designed for seamless online grocery shopping. It provides an intuitive user interface and a secure backend, allowing users to browse products, manage their shopping basket, and complete purchases efficiently.
 
@@ -57,6 +58,79 @@ GroceryMate is a modern, full-featured e-commerce platform designed for seamless
 ![imagen](https://github.com/user-attachments/assets/2772b85e-81f7-446a-9296-4fdc2b652cb7)
 
 https://github.com/user-attachments/assets/d1c5c8e4-5b16-486a-b709-4cf6e6cce6bc
+
+
+
+### ☁️ Cloud Infrastructure (AWS & Terraform)
+
+* <img src="https://raw.githubusercontent.com/awslabs/aws-icons-for-plantuml/v18.0/dist/Compute/EC2.png" width="20"/> **Networking & Connectivity:** Hosted on **AWS EC2** (t2.micro) and **AWS RDS** (PostgreSQL 15). The environment is secured via a **custom Security Group** (`grocery-app-firewall`) controlling traffic on ports **22, 80, 5000, and 5432**.
+* <img src="https://raw.githubusercontent.com/awslabs/aws-icons-for-plantuml/v18.0/dist/Groups/VPC.png" width="20"/> **VPC S3 Endpoint:** Implemented a **Gateway Endpoint** to ensure all traffic between EC2 and S3 remains within the private AWS backbone, improving security and reducing latency at no extra cost.
+* <img src="https://raw.githubusercontent.com/awslabs/aws-icons-for-plantuml/v18.0/dist/Storage/SimpleStorageService.png" width="20"/> **Storage & Folders:** An **S3 Bucket** (`grocery-yssf`) manages assets with a dedicated `avatars/` directory structure, ensuring organized and scalable object storage.
+* <img src="https://raw.githubusercontent.com/awslabs/aws-icons-for-plantuml/v18.0/dist/SecurityIdentityCompliance/IAMRole.png" width="20"/> **Identity & Access Management (IAM):** Implemented the **Principle of Least Privilege** using a custom IAM Role (`grocery-ec2-role`). This allows the EC2 instance and Lambda function to interact securely with S3 and SNS without using hardcoded credentials.
+
+⚠️ Note on VPC Endpoint: The S3 Gateway Endpoint is part of the architectural design. In the current deployment, the Terraform resource is documented but commented out due to AWS Service Control Policy (SCP) restrictions in the lab environment.
+
+### 🚨 Serverless (Lambda) Monitoring & Notifications
+
+We implemented a fully decoupled, event-driven pipeline:
+* <img src="https://raw.githubusercontent.com/awslabs/aws-icons-for-plantuml/v18.0/dist/General/InternetAlt1.png" width="20"/> **S3 Event Trigger:** Automatically detects `s3:ObjectCreated:*` events in the bucket.
+* <img src="https://raw.githubusercontent.com/awslabs/aws-icons-for-plantuml/v18.0/dist/Compute/Lambda.png" width="20"/> **AWS Lambda:** A Python-based function ("Logger") that assumes the IAM role to process metadata and log system activity.
+* <img src="https://raw.githubusercontent.com/awslabs/aws-icons-for-plantuml/v18.0/dist/Messaging/SimpleNotificationService.png" width="20"/> **SNS Alerts:** Dispatches real-time email notifications via an **SNS Topic**, ensuring the administrator is informed of every successful upload.
+* <img src="https://raw.githubusercontent.com/awslabs/aws-icons-for-plantuml/v18.0/dist/ManagementGovernance/CloudWatch.png" width="20"/> **Monitoring & Alerting:** Configured a **CloudWatch Metric Alarm** to monitor EC2 CPU utilization. If the load exceeds 80% for more than 2 minutes, an automated notification is triggered via **AWS SNS**, sending a real-time alert to the administrator's email.
+```mermaid
+graph TB
+    subgraph AWS_Cloud ["AWS Cloud (eu-central-1)"]
+        
+        subgraph Security ["Security & Identity"]
+            IAM["🛡️ IAM Role: grocery-ec2-role"]
+            SG["🔥 Security Group: grocery-app-firewall"]
+        end
+
+        subgraph VPC ["Network Layer (Default VPC)"]
+            EC2["💻 <b>EC2 Web Server</b>"]
+            RDS["🐘 <b>RDS Instance</b>"]
+            VPCE["🔒 <b>VPC S3 Endpoint</b><br/>(Private Gateway)"]
+        end
+
+        subgraph Serverless_Monitoring ["Storage, Events & Monitoring"]
+            S3["📦 <b>S3 Bucket</b>"]
+            Lambda["λ <b>Lambda Logger</b>"]
+            CW["📉 <b>CloudWatch Alarm</b>"]
+            SNS["📢 <b>SNS Topic</b>"]
+        end
+    end
+
+    %% Application Flows
+    User((User)) -- "HTTP (80/5000)" --> SG
+    SG -- "Traffic" --> EC2
+    EC2 -- "PostgreSQL" --> RDS
+    
+    %% Event Driven Pipeline
+    S3 -- "s3:ObjectCreated" --> Lambda
+    Lambda -- "Publish Alert" --> SNS
+
+    %% CloudWatch Monitoring Flow
+    EC2 -. "Metrics" .-> CW
+    CW -- "Trigger (CPU > 80%)" --> SNS
+
+    %% Notification Outbound
+    SNS -- "Email" --> Admin((Admin))
+
+    %% Styling
+    style IAM fill:#f9f9f9,stroke:#D11227,stroke-width:2px
+    style SG fill:#f9f9f9,stroke:#607d8b,stroke-width:2px
+    style VPCE fill:#f0f0f0,stroke:#607d8b,stroke-width:2px,stroke-dasharray: 5
+    style EC2 fill:#fff,stroke:#FF9900,stroke-width:2px
+    style RDS fill:#fff,stroke:#3B48CC,stroke-width:2px
+    style S3 fill:#fff,stroke:#3F8624,stroke-width:2px
+    style Lambda fill:#fff,stroke:#D05C17,stroke-width:2px
+    style CW fill:#fff,stroke:#E7157B,stroke-width:2px
+    style SNS fill:#fff,stroke:#CC2264,stroke-width:2px
+    
+    %% Ändere diese zwei Zeilen im Mermaid Code:
+    EC2 -. "Private Request (Planned)" .-> VPCE
+    VPCE -. "Internal Route" .-> S3
+```    
 
 ## 📋 Prerequisites
 

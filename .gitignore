@@ -3,3 +3,14 @@ frontend/frontend-build.zip
 frontend/temp_extract/
 frontend/src/config.js~
 venv/
+
+
+# Terraform Variablen mit Geheimnissen
+terraform/terraform.tfvars
+*.tfvars
+*.tfvars.json
+
+# Lokale Status-Dateien (enthalten auch oft Geheimnisse)
+terraform.tfstate*
+.terraform/
+.terraform.lock.hcl
