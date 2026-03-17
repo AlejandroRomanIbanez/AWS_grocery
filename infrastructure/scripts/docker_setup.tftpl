@@ -1,0 +1,51 @@
+#!/bin/bash
+# Install Docker and Postgres Client
+apt-get update -y
+apt-get install -y docker.io postgresql-client
+systemctl start docker
+systemctl enable docker
+usermod -aG docker ubuntu
+
+# Pull your specific amd64 image
+docker pull gaj11/grocerymate-app:v1-amd64
+
+# Give the container a name so we can reference it easily
+# We use --name grocerymate_app for easier automation
+docker run -d --name grocerymate_app --network host \
+  -e S3_BUCKET_NAME=grocerymate-avatars-gajanan \
+  -e S3_REGION=eu-central-1 \
+  -e USE_S3_STORAGE=true \
+  -e POSTGRES_USER=postgres \
+  -e POSTGRES_PASSWORD=grocerymate123 \
+  -e POSTGRES_DB=grocerymate \
+  -e POSTGRES_HOST=${rds_address} \
+  -e POSTGRES_URI=postgresql://postgres:grocerymate123@${rds_address}:5432/grocerymate \
+  -p 5000:5000 \
+  gaj11/grocerymate-app:v1-amd64
+
+# --- AUTOMATION SECTION ---
+
+# 1. Wait for RDS to be reachable (The "Telephone" check)
+export PGPASSWORD='grocerymate123'
+until pg_isready -h ${rds_address} -U postgres; do
+  echo "Waiting for RDS database to accept connections..."
+  sleep 5
+done
+
+# 2. Run the Table Creation (The "Surgery" command)
+# This uses the specific Flask path we discovered earlier
+docker exec -t grocerymate_app python -c "
+from app import create_app, db
+app = create_app()
+with app.app_context():
+    db.create_all()
+"
+
+# 3. Optional: Seed Data
+# If you want to automatically import your SQL file every time:
+# docker cp /path/to/your/seed.sql grocerymate_app:/seed.sql
+# docker exec -t grocerymate_app /bin/bash -c "psql -h ${rds_address} -U postgres -d grocerymate < /seed.sql"
+
+
+echo "Infrastructure and Database Schema are ready!"
+
