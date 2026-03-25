@@ -1,6 +1,6 @@
 ## 🏗️ System Architecture
 
-![GroceryMate AWS Architecture](./images/architecture_diagram.png)
+![GroceryMate AWS Architecture](images/architecture_diagram.png)
 
 > **Architecture Overview:** This project deploys a containerized Flask application on AWS using Terraform. 
 > It features a secure VPC, RDS PostgreSQL database, and a fully automated monitoring loop using CloudWatch Alarms 
