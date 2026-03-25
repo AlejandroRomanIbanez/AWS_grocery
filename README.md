@@ -86,7 +86,7 @@ infrastructure/
 
 ---
 
-## 5. 🚀 Key Features
+## 5. Key Features
 
 - **MVP-first Design:** Built for simplicity and cost-efficiency, with a clear upgrade path to production architecture
 
@@ -98,7 +98,7 @@ infrastructure/
 
 ---
 
-## 6. 📊 AWS Services Used
+## 6. AWS Services Used
 
 - EC2 (t3.micro): Hosts the application
 
@@ -112,7 +112,7 @@ infrastructure/
 
 ---
 
-## 7. 🛡️ Monitoring & Alerts
+## 7. Monitoring & Alerts
 
 - **High CPU Alarm:** Triggers if EC2 CPU > 80% for 4 minutes
 
@@ -124,7 +124,7 @@ infrastructure/
 
 ---
 
-## 8. 💰 Cost Management & FinOps
+## 8. Cost Management & FinOps
 
 To ensure financial accountability, I integrated **Infracost** into my local development workflow. This allowed me to:
 
@@ -140,7 +140,7 @@ To ensure financial accountability, I integrated **Infracost** into my local dev
 
 ---
 
-## 9. 🛠️ How to Deploy
+## 9. How to Deploy
 
 - Ensure your AWS credentials are configured with the correct IAM permissions.
 
