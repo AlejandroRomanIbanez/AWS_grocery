@@ -1,3 +1,22 @@
+## 🏗️ System Architecture
+
+![GroceryMate AWS Architecture](./images/architecture_diagram.png)
+
+> **Architecture Overview:** This project deploys a containerized Flask application on AWS using Terraform. 
+> It features a secure VPC, RDS PostgreSQL database, and a fully automated monitoring loop using CloudWatch Alarms 
+> and SNS notifications.
+
+### 🛠️ Tech Stack & Ports
+
+| Service | Tool/Engine | Port | Purpose |
+| :--- | :--- | :--- | :--- |
+| **Frontend/API** | Flask (Python) | `5000` | Application Logic |
+| **Container** | Docker | N/A | Environment Isolation |
+| **Database** | PostgreSQL 16 | `5432` | Persistent Data Storage |
+| **IaC** | Terraform | N/A | Infrastructure Automation |
+| **Security** | IAM Roles | N/A | Least Privilege Access |
+
+
 # 🏗️ GroceryMate Infrastructure (AWS & Terraform)
 
 This folder contains the **Infrastructure as Code (IaC)** used to deploy the GroceryMate application to AWS. 
