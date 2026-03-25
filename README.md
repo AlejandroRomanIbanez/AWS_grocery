@@ -188,6 +188,7 @@ terraform destroy # Removes all AWS resources
 
 - **Migrate Docker images to AWS ECR:** Move from public registries to a private, secure AWS Elastic Container Registry for faster and more secure deployments.
 - **Use AWS SSM Parameter Store:** Transition from sensitive `.tfvars` files to a centralized, encrypted secret management system for database credentials.
+- **Application Load Balancer (ALB):** Implement an ALB to distribute incoming traffic across multiple EC2 instances, enabling better scalability, health checks, and a path for SSL/TLS encryption.
 - **High Availability RDS (Multi-AZ):** Upgrade the database to a Multi-AZ deployment. This creates a synchronous "Standby" replica in a different Availability Zone to ensure zero downtime during a data center failure.
 
 ---
