@@ -1,0 +1,18 @@
+.terraform/
+*.tfstate
+*.tfstate.backup
+*.tfvars
+.terraform.lock.hcl
+
+
+# Ignore all credential/variable files in any folder
+**/*.tfvars
+**/*.tfvars.json
+
+# Ignore local terraform state and directories
+**/.terraform/
+**/*.tfstate
+**/*.tfstate.*
+
+# Ignore all Terraform variable files (sensitive)
+*.tfvars

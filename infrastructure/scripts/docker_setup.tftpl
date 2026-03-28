@@ -1,0 +1,144 @@
+#!/bin/bash
+
+db_endpoint="${db_endpoint}"
+container_name="${container_name}"
+db_password="${db_password}"
+s3_bucket_name="${s3_bucket_name}"
+
+# Install Docker and Postgres Client
+apt-get update -y
+apt-get install -y docker.io postgresql-client awscli
+systemctl start docker
+systemctl enable docker
+usermod -aG docker ubuntu
+
+# Pull your specific amd64 image
+docker pull gaj11/grocerymate-app:v1-amd64
+
+# Give the container a name so we can reference it easily
+# We use --name grocerymate_app for easier automation
+docker run -d --name ${container_name} --network host \
+  -e S3_BUCKET_NAME=${s3_bucket_name} \
+  -e S3_REGION=eu-central-1 \
+  -e USE_S3_STORAGE=true \
+  -e POSTGRES_USER=postgres \
+  -e POSTGRES_PASSWORD=${db_password} \
+  -e POSTGRES_DB=grocerymate \
+  -e POSTGRES_HOST=${db_endpoint} \
+  -e POSTGRES_URI=postgresql://postgres:${db_password}@${db_endpoint}:5432/grocerymate \
+  -p 5000:5000 \
+  gaj11/grocerymate-app:v1-amd64
+
+
+# --- MISSING PIECE: WAIT FOR CONTAINER ---
+echo "Waiting for container to initialize..."
+sleep 15
+
+
+# Use the variable for the S3 "Hot-Fix"
+docker exec -u 0 ${container_name} \
+  sed -i "s|/api/me/avatar/|https://${s3_bucket_name}.s3.eu-central-1.amazonaws.com/avatars/|g" \
+  /app/app/services/user_service.py
+# Restart using the variable
+ docker restart ${container_name}
+
+
+# --- AUTOMATION SECTION RDS ---
+
+# 1. Wait for RDS to be reachable (The "Telephone" check)
+export PGPASSWORD="${db_password}"
+DB_URL="postgresql://postgres:${db_password}@${db_endpoint}:5432/grocerymate"
+
+until pg_isready -h ${db_endpoint} -U postgres; do
+  echo "Waiting for RDS database to accept connections..."
+  sleep 5
+done
+
+# 2. Run the Table Creation (The "Surgery" command)
+# This uses the specific Flask path we discovered earlier
+# The "Schema Creation" (Flask builds the tables)
+
+docker exec -t ${container_name} python -c "
+from app import create_app, db
+app = create_app()
+with app.app_context():
+    db.create_all()"
+
+# 3. Optional: Seed Data
+# If you want to automatically import your SQL file every time:
+# docker cp /path/to/your/seed.sql grocerymate_app:/seed.sql
+# docker exec -t grocerymate_app /bin/bash -c "psql -h ${db_endpoint} -U postgres -d grocerymate < /seed.sql"
+
+
+# --- AUTOMATIC DATABASE INITIALIZATION ---
+# 4. Wait 10 seconds to ensure the RDS and Docker containers are fully up
+sleep 10
+
+# 5. Apply the Avatar Trigger (Intercepts empty strings from the App)
+# The "Golden" Trigger: Automatic S3 Prefixing
+# This handles the logic: If avatar is empty, use default + S3 Path.
+# If avatar is just a filename, add S3 Path.
+psql $DB_URL -c "
+CREATE OR REPLACE FUNCTION fix_avatar() RETURNS trigger AS \$\$
+BEGIN
+    -- Handle empty or null entries
+    IF NEW.avatar = '' OR NEW.avatar IS NULL THEN
+        NEW.avatar := 'https://${s3_bucket_name}.s3.eu-central-1.amazonaws.com/avatars/user_default.png';
+    -- Handle filenames that aren't full URLs yet
+    ELSIF NEW.avatar NOT LIKE 'https%' THEN
+        NEW.avatar := 'https://${s3_bucket_name}.s3.eu-central-1.amazonaws.com/avatars/' || NEW.avatar;
+    END IF;
+    RETURN NEW;
+END;
+\$\$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_fix_avatar ON users;
+CREATE TRIGGER trg_fix_avatar BEFORE INSERT OR UPDATE ON users FOR EACH ROW EXECUTE FUNCTION fix_avatar();"
+
+# 6. Clean up any existing blank avatars from previous test runs
+psql $DB_URL -c "UPDATE users SET avatar = 'user_default.png' WHERE avatar IS NULL OR avatar = '';"
+
+# 7. Convert existing avatar filenames to S3 URLs
+psql $DB_URL -c "
+UPDATE users
+SET avatar = 'https://${s3_bucket_name}.s3.eu-central-1.amazonaws.com/avatars/' || avatar
+WHERE avatar NOT LIKE 'https%';
+"
+
+echo "Database fully initialized, schema created, and avatar trigger active."
+
+
+# 8. Surgical Patch for S3 Deletion (Targeting the Controller)
+echo "Creating the Python Patch for user_controller.py..."
+
+# Create a clean patch file on the EC2 host
+# 8. Surgical Patch for S3 Deletion (Targeting the Controller)
+cat <<EOF > /tmp/s3_patch.txt
+    # --- Start of S3 Cleanup Patch ---
+    try:
+        from app.services.user_service import get_user_info
+        import boto3
+        # Fetch the current user data from DB using the user_id already in the function
+        current_user_data = get_user_info(user_id)
+        if current_user_data and current_user_data.get('avatar'):
+            old_avatar_url = current_user_data['avatar']
+            if "user_default" not in old_avatar_url:
+                old_key = old_avatar_url.split("/")[-1]
+                s3_temp_client = boto3.client('s3')
+                s3_temp_client.delete_object(Bucket="${s3_bucket_name}", Key=f"avatars/{old_key}")
+                print(f"Successfully deleted old S3 object: {old_key}")
+    except Exception as e:
+        print(f"S3 Cleanup Patch encountered an issue: {e}")
+    # --- End of S3 Cleanup Patch ---
+EOF
+
+echo "Injecting patch into ${container_name}..."
+
+# Copy to container
+docker cp /tmp/s3_patch.txt ${container_name}:/tmp/s3_patch.txt
+
+# Inject AFTER the line where 'file' is defined
+docker exec -u root ${container_name} sed -i '/file = request.files\[\x27file\x27\]/r /tmp/s3_patch.txt' /app/app/controllers/user_controller.py
+
+# Reload the application
+docker exec ${container_name} pkill -HUP gunicorn || docker restart ${container_name}
