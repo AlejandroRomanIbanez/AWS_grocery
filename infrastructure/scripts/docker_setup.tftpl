@@ -1,8 +1,9 @@
 #!/bin/bash
 
-rds_address="${rds_address}"
+db_endpoint="${db_endpoint}"
 container_name="${container_name}"
 db_password="${db_password}"
+s3_bucket_name="${s3_bucket_name}"
 
 # Install Docker and Postgres Client
 apt-get update -y
@@ -17,14 +18,14 @@ docker pull gaj11/grocerymate-app:v1-amd64
 # Give the container a name so we can reference it easily
 # We use --name grocerymate_app for easier automation
 docker run -d --name ${container_name} --network host \
-  -e S3_BUCKET_NAME=grocerymate-avatars-gajanan \
+  -e S3_BUCKET_NAME=${s3_bucket_name} \
   -e S3_REGION=eu-central-1 \
   -e USE_S3_STORAGE=true \
   -e POSTGRES_USER=postgres \
   -e POSTGRES_PASSWORD=${db_password} \
   -e POSTGRES_DB=grocerymate \
-  -e POSTGRES_HOST=${rds_address} \
-  -e POSTGRES_URI=postgresql://postgres:${db_password}@${rds_address}:5432/grocerymate \
+  -e POSTGRES_HOST=${db_endpoint} \
+  -e POSTGRES_URI=postgresql://postgres:${db_password}@${db_endpoint}:5432/grocerymate \
   -p 5000:5000 \
   gaj11/grocerymate-app:v1-amd64
 
@@ -36,9 +37,8 @@ sleep 15
 
 # Use the variable for the S3 "Hot-Fix"
 docker exec -u 0 ${container_name} \
-  sed -i 's|/api/me/avatar/|https://grocerymate-avatars-gajanan.s3.eu-central-1.amazonaws.com/avatars/|g' \
+  sed -i "s|/api/me/avatar/|https://${s3_bucket_name}.s3.eu-central-1.amazonaws.com/avatars/|g" \
   /app/app/services/user_service.py
-
 # Restart using the variable
  docker restart ${container_name}
 
@@ -47,9 +47,9 @@ docker exec -u 0 ${container_name} \
 
 # 1. Wait for RDS to be reachable (The "Telephone" check)
 export PGPASSWORD="${db_password}"
-DB_URL="postgresql://postgres:${db_password}@${rds_address}:5432/grocerymate"
+DB_URL="postgresql://postgres:${db_password}@${db_endpoint}:5432/grocerymate"
 
-until pg_isready -h ${rds_address} -U postgres; do
+until pg_isready -h ${db_endpoint} -U postgres; do
   echo "Waiting for RDS database to accept connections..."
   sleep 5
 done
@@ -67,7 +67,7 @@ with app.app_context():
 # 3. Optional: Seed Data
 # If you want to automatically import your SQL file every time:
 # docker cp /path/to/your/seed.sql grocerymate_app:/seed.sql
-# docker exec -t grocerymate_app /bin/bash -c "psql -h ${rds_address} -U postgres -d grocerymate < /seed.sql"
+# docker exec -t grocerymate_app /bin/bash -c "psql -h ${db_endpoint} -U postgres -d grocerymate < /seed.sql"
 
 
 # --- AUTOMATIC DATABASE INITIALIZATION ---
@@ -83,10 +83,10 @@ CREATE OR REPLACE FUNCTION fix_avatar() RETURNS trigger AS \$\$
 BEGIN
     -- Handle empty or null entries
     IF NEW.avatar = '' OR NEW.avatar IS NULL THEN
-        NEW.avatar := 'https://grocerymate-avatars-gajanan.s3.eu-central-1.amazonaws.com/avatars/user_default.png';
+        NEW.avatar := 'https://${s3_bucket_name}.s3.eu-central-1.amazonaws.com/avatars/user_default.png';
     -- Handle filenames that aren't full URLs yet
     ELSIF NEW.avatar NOT LIKE 'https%' THEN
-        NEW.avatar := 'https://grocerymate-avatars-gajanan.s3.eu-central-1.amazonaws.com/avatars/' || NEW.avatar;
+        NEW.avatar := 'https://${s3_bucket_name}.s3.eu-central-1.amazonaws.com/avatars/' || NEW.avatar;
     END IF;
     RETURN NEW;
 END;
@@ -101,7 +101,7 @@ psql $DB_URL -c "UPDATE users SET avatar = 'user_default.png' WHERE avatar IS NU
 # 7. Convert existing avatar filenames to S3 URLs
 psql $DB_URL -c "
 UPDATE users
-SET avatar = 'https://grocerymate-avatars-gajanan.s3.eu-central-1.amazonaws.com/avatars/' || avatar
+SET avatar = 'https://${s3_bucket_name}.s3.eu-central-1.amazonaws.com/avatars/' || avatar
 WHERE avatar NOT LIKE 'https%';
 "
 
@@ -125,7 +125,7 @@ cat <<EOF > /tmp/s3_patch.txt
             if "user_default" not in old_avatar_url:
                 old_key = old_avatar_url.split("/")[-1]
                 s3_temp_client = boto3.client('s3')
-                s3_temp_client.delete_object(Bucket="grocerymate-avatars-gajanan", Key=f"avatars/{old_key}")
+                s3_temp_client.delete_object(Bucket="${s3_bucket_name}", Key=f"avatars/{old_key}")
                 print(f"Successfully deleted old S3 object: {old_key}")
     except Exception as e:
         print(f"S3 Cleanup Patch encountered an issue: {e}")
