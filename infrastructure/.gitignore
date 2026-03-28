@@ -14,5 +14,5 @@
 **/*.tfstate
 **/*.tfstate.*
 
-# Ignore specific sensitive files in the dev environment
-environments/dev/terraform.tfvars
+# Ignore all Terraform variable files (sensitive)
+*.tfvars
