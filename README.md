@@ -74,28 +74,41 @@ It automates the setup of the network, compute, database, and monitoring layers.
 
 ```bash
 infrastructure/
-├── images/             # Architecture diagrams and screenshots
-│   └── architecture_diagram.png
-├── scripts/            # Shell scripts & Cloud-init (User Data)
-│   └── docker_setup.tftpl
-├── main.tf             # Primary AWS Resource definitions
-├── providers.tf        # Terraform & AWS Provider config (S3 Backend)
-├── terraform.tfvars    # Environment variables (Sensitive)
-└── variables.tf        # Variable definitions
+├── environments/
+│   └── dev/                # Development Environment Root
+│       ├── main.tf         # Module orchestration
+│       ├── providers.tf    # Provider configurations
+│       ├── backend.tf      # S3 Remote State configuration
+│       ├── variables.tf    
+│       └── terraform.tfvars
+├── modules/
+│   ├── network/            # VPC, Public/Private Subnets, IGW
+│   ├── security/           # Dynamic SSH whitelisting & RDS Security Group
+│   ├── ec2/                # Application instance logic
+│   ├── database/           # Private RDS PostgreSQL instance
+│   └── storage/            # S3 Buckets for application data (Avatars)
+├── scripts/
+│   └── docker_setup.tftpl  # EC2 Bootstrap & Docker Automation with RDS Initialization
+└── images/
+    └── architecture_diagram.png
 ```
 
 ---
 
 ## 5. Key Features
 
-- **MVP-first Design:** Built for simplicity and cost-efficiency, with a clear upgrade path to production architecture
+### 🏗️ Core Foundation
+* **MVP-first Design:** Built for simplicity and cost-efficiency, with a clear upgrade path toward production-grade architecture.
+* **Remote State Management:** Terraform state is securely stored in S3 (`grocerymate-tf-state-gajanan-x12`) to support collaboration and prevent state loss.
+* **Containerized Deployment:** The Flask application is fully containerized using Docker and automatically deployed on EC2 via `user_data` bootstrap scripts.
+* **Automated Database Initialization:** PostgreSQL (RDS) schema and initial configuration are automatically provisioned during instance bootstrap.
 
-- **Remote State:** Terraform state is stored in S3 (`grocerymate-tf-state-gajanan-x12`) for security and collaboration
-
-- **Containerized Deployment:** Flask app runs in Docker on EC2 via `user_data`
-
-- **Automated Database Setup:** RDS PostgreSQL schema initialized during deployment
-
+### 🛡️ Advanced Security & Architecture (Refactor v2)
+* **Custom VPC & Tiered Architecture:** Implemented a dedicated VPC with **public subnets** for the application layer and **private subnets** for the database, ensuring proper network isolation.
+* **Dynamic SSH Whitelisting:** Integrated a Terraform `http` data source to dynamically retrieve the current public IP, restricting SSH (port 22) access to a single `/32` CIDR block.
+* **RDS Network Isolation ("Security Moat"):** Disabled public access to RDS and deployed it within private subnets. Database access is strictly limited to the EC2 instance via security group references.
+* **Modular Infrastructure Design:** Refactored the infrastructure into reusable Terraform modules (`network`, `security`, `ec2`, `database`, `storage`), enabling clean separation of concerns and environment-based deployments.
+* **Dynamic AMI Resolution:** Uses Terraform `aws_ami` data sources to dynamically select the latest stable **Ubuntu 22.04 LTS** image for consistent and up-to-date provisioning.
 ---
 
 ## 6. AWS Services Used
@@ -130,7 +143,7 @@ To ensure financial accountability, I integrated **Infracost** into my local dev
 
 - **Estimate Costs Pre-Deployment:** I generated a cost breakdown of the `main.tf` before applying changes.
 
-- **Identify Cost Drivers:** Quickly saw that the RDS instance and NAT Gateways (if used) are the primary cost factors.
+- **Identify Cost Drivers:** Quickly saw that the RDS and EC2 instances are the primary cost factors.
 
 - **Budget Alignment:** Verified that the current architecture fits within the AWS Free Tier, maintaining a projected monthly cost of near $0.00 for the first year.
 
@@ -143,6 +156,14 @@ To ensure financial accountability, I integrated **Infracost** into my local dev
 ## 9. How to Deploy
 
 - Ensure your AWS credentials are configured with the correct IAM permissions.
+
+- Navigate to the dev environment
+
+```bash
+
+cd infrastructure/environments/dev
+
+```
 
 - Initialize Terraform:
 
