@@ -123,4 +123,14 @@ instance
 
 *.py~
 
-infrastructure/terraform.tfvars
+# Ignore all credential/variable files in any folder
+**/*.tfvars
+**/*.tfvars.json
+
+# Ignore local terraform state and directories
+**/.terraform/
+**/*.tfstate
+**/*.tfstate.*
+
+# Ignore specific sensitive files in the dev environment
+environments/dev/terraform.tfvars
